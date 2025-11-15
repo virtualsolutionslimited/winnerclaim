@@ -1256,6 +1256,7 @@ function showClaimsList(winner) {
 let currentClaimDetail = null;
 
 function viewClaimDetail(claim) {
+  console.log("viewClaimDetail called with:", claim);
   currentClaimDetail = claim;
 
   // Populate the detail modal
@@ -1290,6 +1291,7 @@ function viewClaimDetail(claim) {
   document.getElementById("detailStatus").textContent = status;
 
   // Show the modal
+  console.log("Showing claimDetailModal");
   showModal("claimDetailModal");
 }
 

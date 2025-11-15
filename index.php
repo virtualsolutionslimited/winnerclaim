@@ -777,7 +777,7 @@ if ($currentDraw) {
           <table class="claims-table">
             <thead>
               <tr>
-                <th>Date</th>
+                <th>Draw Week Date</th>
                 <th>Actions</th>
               </tr>
             </thead>
