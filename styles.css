@@ -400,16 +400,16 @@ p {
 }
 
 .contract-intro {
-  background: rgba(255, 87, 34, 0.1);
+  /* background: rgba(255, 87, 34, 0.1); */
   padding: 15px;
   border-radius: 6px;
   margin-bottom: 20px;
-  border-left: 4px solid var(--primary-color);
+  /* border-left: 4px solid var(--primary-color); */
 }
 
 .contract-intro p strong {
   color: var(--primary-color);
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
 /* Ensure modal is centered on mobile */
