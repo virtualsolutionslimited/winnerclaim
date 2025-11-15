@@ -737,7 +737,63 @@ p {
   display: flex;
   gap: 8px;
   margin: 15px 0 20px;
-  justify-content: center;
+  justify-content: flex-start;
+}
+
+.otp-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.otp-layout .otp-input-container {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.otp-layout .otp-actions {
+  flex: 0 0 auto;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.otp-layout .otp-actions .button-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.otp-layout .otp-actions .otp-btn {
+  order: 1;
+}
+
+.otp-layout .otp-actions .resend-btn {
+  order: 2;
+  margin-left: 0;
+  align-self: flex-end;
+  background: transparent;
+  color: var(--primary-color);
+  border: none;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.otp-layout .otp-actions .resend-btn:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.otp-layout .otp-actions .otp-timer {
+  order: 3;
+  margin: 0;
+  flex-shrink: 0;
+  text-align: center;
 }
 
 .otp-input-container input {

@@ -139,22 +139,28 @@
 
           <div id="otpSection" class="form-group" style="display: none">
             <label for="otp">Enter OTP Code</label>
-            <div class="otp-input-container">
-              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
-              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
-              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
-              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
-              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
-              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
-              <input type="hidden" id="otp" name="otp" />
-            </div>
-            <div class="otp-actions">
-              <button type="button" id="verifyOtpBtn" class="otp-btn" disabled>
-                Verify OTP
-              </button>
-              <div class="otp-timer">
-                <span id="otpTimer">02:00</span> remaining
-                <a href="#" id="resendOtp" style="display: none; margin-left: 10px">Resend OTP</a>
+            <div class="otp-layout">
+              <div class="otp-input-container">
+                <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+                <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+                <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+                <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+                <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+                <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+                <input type="hidden" id="otp" name="otp" />
+              </div>
+              <div class="otp-actions">
+                <div class="button-row">
+                  <button type="button" id="verifyOtpBtn" class="otp-btn" disabled>
+                    Verify OTP
+                  </button>
+                  <button type="button" id="resendOtp" class="resend-btn">
+                    Resend OTP
+                  </button>
+                </div>
+                <div class="otp-timer">
+                  <span id="otpTimer">02:00</span> remaining
+                </div>
               </div>
             </div>
           </div>
