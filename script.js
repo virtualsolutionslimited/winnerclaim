@@ -113,8 +113,19 @@ function showModal(modalId) {
   }
 }
 
-function hideModal() {
-  if (currentModal) {
+function hideModal(modalId) {
+  if (modalId) {
+    // Close specific modal
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove("show");
+      if (currentModal === modal) {
+        currentModal = null;
+        document.body.style.overflow = "";
+      }
+    }
+  } else if (currentModal) {
+    // Close current modal (default behavior)
     currentModal.classList.remove("show");
     currentModal = null;
     document.body.style.overflow = "";
