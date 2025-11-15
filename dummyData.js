@@ -8,6 +8,20 @@ const dummyWinners = [
     verified: false,
     contractAccepted: false,
     kycCompleted: false,
+    claims: [
+      {
+        id: "CLAIM001",
+        prizeName: "Ghana World Cup Experience",
+        date: "2024-11-15",
+        status: "completed",
+      },
+      {
+        id: "CLAIM002",
+        prizeName: "VIP Match Tickets",
+        date: "2024-10-20",
+        status: "completed",
+      },
+    ],
   },
   {
     phone: "0201234567",
@@ -18,6 +32,14 @@ const dummyWinners = [
     verified: false,
     contractAccepted: false,
     kycCompleted: false,
+    claims: [
+      {
+        id: "CLAIM003",
+        prizeName: "World Cup Merchandise Pack",
+        date: "2024-11-01",
+        status: "completed",
+      },
+    ],
   },
   {
     phone: "0247654321",

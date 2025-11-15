@@ -524,6 +524,49 @@
       </div>
     </div>
 
+    <!-- My Claims Phone Verification Modal -->
+    <div class="modal" id="myClaimsPhoneModal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Verify Your Phone Number</h2>
+        <p>Enter your phone number to view your claims</p>
+        
+        <form id="myClaimsPhoneForm" class="verification-form">
+          <div class="form-group">
+            <label for="myClaimsPhone">Phone Number</label>
+            <div class="input-with-button">
+              <input type="tel" id="myClaimsPhone" placeholder="Enter your phone number" required />
+              <button type="submit" class="verify-btn">Verify</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- My Claims List Modal -->
+    <div class="modal" id="myClaimsListModal">
+      <div class="modal-content claims-modal">
+        <span class="close-btn">&times;</span>
+        <h2 id="claimsUserName">Your Claims</h2>
+        <p class="text-muted">View and download your claim contracts</p>
+        
+        <div class="claims-table-container">
+          <table class="claims-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Download Contract</th>
+              </tr>
+            </thead>
+            <tbody id="claimsTableBody">
+              <!-- Claims will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="script.js"></script>
   </body>
 </html>

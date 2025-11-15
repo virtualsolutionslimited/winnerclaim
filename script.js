@@ -6,6 +6,7 @@ import {
 
 // DOM Elements
 const claimBtn = document.querySelector(".claim-cta");
+const myClaimsBtn = document.querySelector(".my-claims-btn");
 const countdownDisplay = document.getElementById("countdown-display");
 const countdownValues = document.querySelectorAll(".countdown-value");
 const countdownLabels = document.querySelectorAll(".countdown-label");
@@ -16,6 +17,10 @@ const verifyOtpBtn = document.getElementById("verifyOtpBtn");
 const resendOtp = document.getElementById("resendOtp");
 const otpTimer = document.getElementById("otpTimer");
 const accountForm = document.getElementById("accountForm");
+const myClaimsPhoneForm = document.getElementById("myClaimsPhoneForm");
+const myClaimsPhoneInput = document.getElementById("myClaimsPhone");
+const claimsTableBody = document.getElementById("claimsTableBody");
+const claimsUserName = document.getElementById("claimsUserName");
 const contractForm = document.getElementById("contractForm");
 const kycForm = document.getElementById("kycForm");
 const acceptContractBtn = document.getElementById("acceptContractBtn");
@@ -777,6 +782,99 @@ function startOtpCountdown() {
   }, 1000);
 }
 
+// Initialize My Claims Phone Form
+function initMyClaimsPhoneForm() {
+  myClaimsPhoneForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const phoneNumber = myClaimsPhoneInput.value.trim();
+
+    // Validate phone number (basic validation)
+    if (!phoneNumber || phoneNumber.length < 10) {
+      showError("Please enter a valid phone number");
+      return;
+    }
+
+    // Find winner by phone number
+    const winner = findWinnerByPhone(phoneNumber);
+
+    if (winner) {
+      // Show claims list modal
+      showClaimsList(winner);
+      hideModal();
+      showModal("myClaimsListModal");
+    } else {
+      showError("No claims found for this phone number");
+    }
+  });
+}
+
+// Show Claims List
+function showClaimsList(winner) {
+  // Update user name
+  claimsUserName.textContent = `${winner.name}'s Claims`;
+
+  // Clear existing claims
+  claimsTableBody.innerHTML = "";
+
+  // Check if winner has any claims
+  if (winner.claims && winner.claims.length > 0) {
+    winner.claims.forEach((claim) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${claim.prizeName}</td>
+        <td>${new Date(claim.date).toLocaleDateString()}</td>
+        <td>
+          <button class="download-btn" onclick="downloadContract('${
+            claim.id
+          }', '${winner.name}', '${claim.prizeName}')">
+            Download
+          </button>
+        </td>
+      `;
+      claimsTableBody.appendChild(row);
+    });
+  } else {
+    // Show no claims message
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td colspan="3" style="text-align: center; padding: 20px;">
+        No claims found for this user
+      </td>
+    `;
+    claimsTableBody.appendChild(row);
+  }
+}
+
+// Download Contract
+function downloadContract(claimId, winnerName, prizeName) {
+  // Create a simple contract text
+  const contractContent = `
+WINNER ACCEPTANCE CONTRACT
+
+Claim ID: ${claimId}
+Winner Name: ${winnerName}
+Prize: ${prizeName}
+Date: ${new Date().toLocaleDateString()}
+
+This contract confirms that ${winnerName} has successfully claimed the ${prizeName} prize.
+The terms and conditions have been accepted and verified.
+
+Generated on: ${new Date().toLocaleString()}
+  `.trim();
+
+  // Create a blob and download
+  const blob = new Blob([contractContent], { type: "text/plain" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Contract_${claimId}_${winnerName.replace(/\s+/g, "_")}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+}
+
 // Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
   // Start the countdown
@@ -803,9 +901,19 @@ document.addEventListener("DOMContentLoaded", () => {
     initKycForm();
   }
 
+  // Initialize My Claims phone form
+  if (myClaimsPhoneForm) {
+    initMyClaimsPhoneForm();
+  }
+
   // Claim button click handler
   claimBtn.addEventListener("click", () => {
     showModal("phoneVerificationModal");
+  });
+
+  // My Claims button handler
+  myClaimsBtn.addEventListener("click", () => {
+    showModal("myClaimsPhoneModal");
   });
 
   // Close button handlers

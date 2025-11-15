@@ -274,6 +274,85 @@ p {
   padding: 2rem;
 }
 
+/* My Claims Modal Styles */
+#myClaimsPhoneModal .modal-content {
+  text-align: center;
+  max-width: 500px;
+  padding: 2rem;
+}
+
+#myClaimsPhoneModal .verify-btn {
+  background-color: #fcd115;
+  color: #170742;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#myClaimsPhoneModal .verify-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(252, 209, 21, 0.3);
+}
+
+.claims-modal {
+  max-width: 800px;
+  width: 90%;
+}
+
+.claims-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 20px;
+}
+
+.claims-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.claims-table th,
+.claims-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.claims-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: var(--text-primary);
+  position: sticky;
+  top: 0;
+}
+
+.claims-table tr:hover {
+  background-color: transparent;
+}
+
+.download-btn {
+  background-color: var(--accent-color);
+  color: #170742;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all var(--transition);
+}
+
+.download-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(252, 209, 21, 0.3);
+}
+
 #errorModal .error-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
