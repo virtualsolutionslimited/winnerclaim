@@ -301,71 +301,124 @@ p {
 }
 
 .claims-modal {
-  max-width: 800px;
-  width: 90%;
+  max-width: 900px;
+  width: 95%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 1px solid rgba(252, 209, 21, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .claims-modal .modal-header {
-  color: #170742;
-  padding: 2rem;
+  color: #ffffff;
+  padding: 2.5rem 2rem 1.5rem;
   margin: -2rem -2rem 1rem -2rem;
   border-radius: 12px 12px 0 0;
+  background: linear-gradient(
+    135deg,
+    rgba(252, 209, 21, 0.1) 0%,
+    rgba(23, 7, 66, 0.1) 100%
+  );
+  border-bottom: 1px solid rgba(252, 209, 21, 0.2);
 }
 
 .claims-modal .modal-header h2 {
-  color: #170742;
+  color: #ffffff;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .claims-modal .modal-header p {
-  color: #170742;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  font-weight: 400;
 }
 
 .claims-table-container {
   max-height: 400px;
   overflow-y: auto;
   margin-top: 20px;
+  padding: 0 1rem;
+}
+
+.claims-table-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.claims-table-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.claims-table-container::-webkit-scrollbar-thumb {
+  background: rgba(252, 209, 21, 0.5);
+  border-radius: 4px;
+}
+
+.claims-table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(252, 209, 21, 0.7);
 }
 
 .claims-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .claims-table th,
 .claims-table td {
-  padding: 12px;
+  padding: 16px;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .claims-table th {
-  background-color: #fcd115;
+  background: linear-gradient(135deg, #fcd115 0%, #f4b400 100%);
   color: #170742;
   font-weight: 600;
   position: sticky;
   top: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.9rem;
+}
+
+.claims-table td {
+  color: #ffffff;
+  font-weight: 400;
 }
 
 .claims-table tr:hover {
-  background-color: transparent;
+  background-color: rgba(252, 209, 21, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.claims-table tr:last-child td {
+  border-bottom: none;
 }
 
 .download-btn {
-  background-color: #fcd115;
+  background: linear-gradient(135deg, #fcd115 0%, #f4b400 100%);
   color: #170742;
   border: none;
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   transition: all var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(252, 209, 21, 0.2);
 }
 
 .download-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(252, 209, 21, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(252, 209, 21, 0.4);
 }
 
 #errorModal .error-icon {

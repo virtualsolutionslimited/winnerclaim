@@ -11,13 +11,13 @@ const dummyWinners = [
     claims: [
       {
         id: "CLAIM001",
-        prizeName: "Ghana World Cup Experience",
+        prizeName: "Week 1",
         date: "2024-11-15",
         status: "completed",
       },
       {
         id: "CLAIM002",
-        prizeName: "VIP Match Tickets",
+        prizeName: "Week 2",
         date: "2024-10-20",
         status: "completed",
       },
@@ -35,7 +35,7 @@ const dummyWinners = [
     claims: [
       {
         id: "CLAIM003",
-        prizeName: "World Cup Merchandise Pack",
+        prizeName: "Week 3",
         date: "2024-11-01",
         status: "completed",
       },
