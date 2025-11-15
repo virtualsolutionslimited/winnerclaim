@@ -1,0 +1,472 @@
+<?php
+/**
+ * CSV Template Generator and Upload System for Winners
+ * Simple solution without external dependencies
+ */
+
+// Database configuration
+$host = '127.0.0.1';
+$dbname = 'raffle';
+$username = 'root';
+$password = '';
+
+$message = '';
+$error = '';
+$uploadedCount = 0;
+
+// Handle template download
+if (isset($_GET['download_template'])) {
+    // Set headers for CSV download
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment;filename="winners_template.csv"');
+    header('Cache-Control: max-age=0');
+    
+    // Open output stream
+    $output = fopen('php://output', 'w');
+    
+    // Add BOM for proper UTF-8 encoding in Excel
+    fwrite($output, "\xEF\xBB\xBF");
+    
+    // Write header row with tab delimiter (Excel's default)
+    fwrite($output, "Name\tPhone\n");
+    
+    // Add sample data (optional)
+    fwrite($output, "John Doe\t0201234567\n");
+    fwrite($output, "Jane Smith\t0507654321\n");
+    
+    fclose($output);
+    exit;
+}
+
+// Handle file upload
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
+    try {
+        // Check if file was uploaded
+        if ($_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
+            throw new Exception("File upload error: " . $_FILES['csv_file']['error']);
+        }
+        
+        // Check file extension
+        $fileExtension = strtolower(pathinfo($_FILES['csv_file']['name'], PATHINFO_EXTENSION));
+        if ($fileExtension !== 'csv') {
+            throw new Exception("Invalid file type. Please upload a CSV file (.csv)");
+        }
+        
+        // Read the CSV file
+        $csvData = [];
+        $handle = fopen($_FILES['csv_file']['tmp_name'], 'r');
+        
+        if (!$handle) {
+            throw new Exception("Unable to open the uploaded file");
+        }
+        
+        // Skip BOM if present
+        $firstLine = fgets($handle);
+        if (strpos($firstLine, "\xEF\xBB\xBF") === 0) {
+            $firstLine = substr($firstLine, 3);
+        }
+        
+        // Put first line back and read as CSV
+        rewind($handle);
+        
+        // Detect delimiter by reading first line
+        $firstLine = fgets($handle);
+        $delimiter = ',';
+        if (strpos($firstLine, "\t") !== false) {
+            $delimiter = "\t";
+        }
+        rewind($handle);
+        
+        $rowNumber = 0;
+        $errors = [];
+        
+        // Connect to database
+        $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        
+        // Prepare insert statement
+        $stmt = $pdo->prepare("
+            INSERT INTO winners (name, phone, is_claimed, createdAt, updatedAt) 
+            VALUES (?, ?, 0, NOW(), NOW())
+        ");
+        
+        while (($data = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
+            $rowNumber++;
+            
+            // Skip header row (assuming first row contains headers)
+            if ($rowNumber === 1) {
+                // Debug: Log what we're actually reading
+                error_log("Row 1 data: " . print_r($data, true));
+                error_log("Header 0: '" . trim($data[0]) . "'");
+                error_log("Header 1: '" . trim($data[1]) . "'");
+                
+                // Validate headers with more flexible checking
+                $header0 = strtolower(trim($data[0], " \t\n\r\0\x0B\xEF\xBB\xBF"));
+                $header1 = strtolower(trim($data[1], " \t\n\r\0\x0B\xEF\xBB\xBF"));
+                
+                if ($header0 !== 'name' || $header1 !== 'phone') {
+                    throw new Exception("Invalid CSV format. First row must contain 'Name' and 'Phone' headers. Found: '$header0' and '$header1'");
+                }
+                continue;
+            }
+            
+            try {
+                // Get name and phone from columns A and B (indices 0 and 1)
+                $name = isset($data[0]) ? trim($data[0], " \t\n\r\0\x0B\xEF\xBB\xBF") : '';
+                $phone = isset($data[1]) ? trim($data[1], " \t\n\r\0\x0B\xEF\xBB\xBF") : '';
+                
+                // Validate required fields
+                if (empty($name) || empty($phone)) {
+                    $errors[] = "Row $rowNumber: Name and Phone are required";
+                    continue;
+                }
+                
+                // Validate phone format (basic validation)
+                if (!preg_match('/^[0-9+\s()-]+$/', $phone)) {
+                    $errors[] = "Row $rowNumber: Invalid phone format for '$phone'";
+                    continue;
+                }
+                
+                // Insert into database
+                $stmt->execute([$name, $phone]);
+                $uploadedCount++;
+                
+            } catch (PDOException $e) {
+                $errors[] = "Row $rowNumber: Database error - " . $e->getMessage();
+            } catch (Exception $e) {
+                $errors[] = "Row $rowNumber: " . $e->getMessage();
+            }
+        }
+        
+        fclose($handle);
+        
+        if ($uploadedCount > 0) {
+            $message = "Successfully uploaded $uploadedCount winners!";
+        }
+        
+        if (!empty($errors)) {
+            $error .= "Some rows had errors:\n" . implode("\n", $errors);
+        }
+        
+    } catch (Exception $e) {
+        $error = $e->getMessage();
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winners CSV Upload</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .template-info {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .template-info h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        
+        .template-info ul {
+            margin-left: 20px;
+            color: #555;
+        }
+        
+        .template-info li {
+            margin-bottom: 8px;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .download-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .upload-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: white;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            text-align: center;
+            color: #666;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .file-input-button:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc3545;
+            white-space: pre-line;
+        }
+        
+        .file-name {
+            margin-top: 10px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .instructions h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #856404;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+        }
+        
+        .excel-note {
+            background: #e2e3e5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #6c757d;
+        }
+        
+        .excel-note h4 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        
+        .excel-note p {
+            color: #495057;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Winners CSV Upload</h1>
+            <p class="subtitle">Download template and upload winner data</p>
+        </header>
+        
+        <?php if ($message): ?>
+            <div class="success-message">
+                ✅ <?php echo htmlspecialchars($message); ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if ($error): ?>
+            <div class="error-message">
+                ❌ <?php echo htmlspecialchars($error); ?>
+            </div>
+        <?php endif; ?>
+        
+        <!-- Template Download Section -->
+        <div class="card">
+            <h2 class="section-title">📥 Download CSV Template</h2>
+            
+            <div class="template-info">
+                <h3>Template Information</h3>
+                <ul>
+                    <li><strong>Column A:</strong> Name (Required)</li>
+                    <li><strong>Column B:</strong> Phone (Required)</li>
+                    <li>Template includes sample data in rows 2-3</li>
+                    <li>Replace sample data with your actual winner data</li>
+                    <li>Keep the header row (Row 1) unchanged</li>
+                </ul>
+            </div>
+            
+            <div class="excel-note">
+                <h4>📋 Excel Compatible</h4>
+                <p>This CSV file will open directly in Excel and can be edited like a regular Excel spreadsheet. When you save, choose "CSV (Comma delimited)" format.</p>
+            </div>
+            
+            <a href="?download_template=1" class="download-btn">
+                📥 Download Winners Template
+            </a>
+        </div>
+        
+        <!-- Upload Section -->
+        <div class="card">
+            <h2 class="section-title">📤 Upload Winners Data</h2>
+            
+            <div class="instructions">
+                <h4>Instructions:</h4>
+                <ol>
+                    <li>Download and open the CSV template in Excel</li>
+                    <li>Fill the template with winner data (Name and Phone columns)</li>
+                    <li>Save the file as CSV format in Excel</li>
+                    <li>Select the saved CSV file below and upload</li>
+                    <li>System will validate and insert data into the winners table</li>
+                </ol>
+            </div>
+            
+            <form method="POST" enctype="multipart/form-data" class="upload-form">
+                <div class="file-input-wrapper">
+                    <input type="file" name="csv_file" class="file-input" accept=".csv" required>
+                    <div class="file-input-button">
+                        📁 Choose CSV File
+                    </div>
+                </div>
+                <div class="file-name" id="file-name">No file selected</div>
+                
+                <button type="submit" class="submit-btn">
+                    🚀 Upload Winners Data
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Update file name when file is selected
+        document.querySelector('.file-input').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || 'No file selected';
+            document.getElementById('file-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html>
