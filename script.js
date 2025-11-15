@@ -669,7 +669,7 @@ function startOtpCountdown() {
     if (otpTimer) {
       otpTimer.textContent = `${minutes}:${remainingSeconds
         .toString()
-        .padStart(2, "0")}`;
+        .padStart(2, "0")} `;
     }
 
     if (seconds <= 0) {
@@ -887,7 +887,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const seconds = otpTimeLeft % 60;
     otpTimer.textContent = `${minutes.toString().padStart(2, "0")}:${seconds
       .toString()
-      .padStart(2, "0")}`;
+      .padStart(2, "0")} `;
   }
 
   // Resend OTP
