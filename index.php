@@ -28,7 +28,7 @@
           <span class="banner-icon">⏳</span>
           <div class="banner-text">
             <div class="banner-title">
-              Claim window: 5 days from SMS receipt
+              Claim window: 5 days from 16th November 2025
             </div>
             <div class="countdown-display">
               Time remaining: <span id="countdown-display">4d 23h 59m</span>
