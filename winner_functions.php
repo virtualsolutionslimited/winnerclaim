@@ -409,9 +409,111 @@ function createClaimForDrawWeek($pdo, $claimData, $drawWeekId) {
 }
 
 /**
- * Get all unclaimed winners for the current draw week
+ * Clean and normalize phone number for comparison
+ * @param string $phone Phone number to clean
+ * @return string Cleaned phone number
+ */
+function cleanPhoneNumber($phone) {
+    // Remove all non-digit characters
+    $phone = preg_replace('/[^0-9]/', '', $phone);
+    
+    // Remove leading 0 if present (for Ghana numbers)
+    if (strlen($phone) === 10 && substr($phone, 0, 1) === '0') {
+        $phone = substr($phone, 1);
+    }
+    
+    // Remove +233 prefix if present
+    if (strlen($phone) > 9 && substr($phone, 0, 3) === '233') {
+        $phone = substr($phone, 3);
+    }
+    
+    return $phone;
+}
+
+/**
+ * Get unclaimed winners for current draw week by phone number
  * @param PDO $pdo Database connection
- * @return array Array of unclaimed winners with their information
+ * @param string $phone Phone number to check
+ * @return array Result with unclaimed winner info for the phone
+ */
+function getUnclaimedWinnerByPhoneForCurrentDraw($pdo, $phone) {
+    try {
+        require_once 'draw_functions.php';
+        
+        // Get current draw week
+        $currentDraw = getCurrentDrawWeek($pdo);
+        
+        if (!$currentDraw) {
+            return [
+                'status' => 'error',
+                'message' => 'No current draw week found',
+                'unclaimed_winner' => null
+            ];
+        }
+        
+        // Normalize phone number for comparison
+        $cleanPhone = cleanPhoneNumber($phone);
+        
+        // Get unclaimed winner for this phone in current draw week
+        $stmt = $pdo->prepare("
+            SELECT w.*, d.date as draw_date
+            FROM winners w 
+            LEFT JOIN draw_dates d ON w.draw_week = d.id 
+            WHERE w.draw_week = ? AND w.is_claimed = 0 AND (
+                w.phone = ? OR w.phone = ? OR w.phone = ?
+            )
+            ORDER BY w.createdAt ASC
+        ");
+        
+        // Try different phone formats: original, with +233, with 0 prefix
+        $phoneVariants = [
+            $cleanPhone,
+            '+233' . $cleanPhone,
+            '0' . $cleanPhone
+        ];
+        
+        $stmt->execute([$currentDraw['id'], ...$phoneVariants]);
+        $winner = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($winner) {
+            // Format the result
+            return [
+                'status' => 'success',
+                'message' => 'Found unclaimed winner for this phone',
+                'current_draw' => $currentDraw,
+                'unclaimed_winner' => [
+                    'id' => $winner['id'],
+                    'name' => $winner['name'],
+                    'phone' => $winner['phone'],
+                    'draw_week' => $winner['draw_week'],
+                    'draw_date' => $winner['draw_date'],
+                    'created_at' => $winner['createdAt'],
+                    'days_since_win' => calculateDaysSince($winner['createdAt'])
+                ]
+            ];
+        } else {
+            return [
+                'status' => 'not_found',
+                'message' => 'No unclaimed winnings found for this phone number in current draw week',
+                'current_draw' => $currentDraw,
+                'unclaimed_winner' => null
+            ];
+        }
+        
+    } catch (PDOException $e) {
+        error_log("Error getting unclaimed winner by phone: " . $e->getMessage());
+        return [
+            'status' => 'error',
+            'message' => 'Database error: ' . $e->getMessage(),
+            'unclaimed_winner' => null
+        ];
+    }
+}
+
+/**
+ * Get unclaimed winners for current draw week
+ * @param PDO $pdo Database connection
+ * @return array Result with unclaimed winners and stats
  */
 function getUnclaimedWinnersForCurrentDraw($pdo) {
     try {

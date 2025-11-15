@@ -1,6 +1,9 @@
 <?php
 require_once 'db.php';
 
+// Include winner_functions for cleanPhoneNumber function
+require_once 'winner_functions.php';
+
 /**
  * Generate a 6-digit random code
  * @return string 6-digit code
@@ -208,26 +211,6 @@ function updateWinnerOTP($phoneNumber, $code) {
         error_log("Error updating winner OTP: " . $e->getMessage());
         return false;
     }
-}
-
-/**
- * Clean and format phone number for SMS
- * @param string $phone The phone number to clean
- * @return string Cleaned phone number
- */
-function cleanPhoneNumber($phone) {
-    // Remove all non-numeric characters
-    $cleaned = preg_replace('/[^0-9]/', '', $phone);
-    
-    // Remove leading zeros
-    $cleaned = ltrim($cleaned, '0');
-    
-    // Add Ghana country code if not present and number is 9 digits
-    if (strlen($cleaned) === 9) {
-        $cleaned = '233' . $cleaned;
-    }
-    
-    return $cleaned;
 }
 
 /**

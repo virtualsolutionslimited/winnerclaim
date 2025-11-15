@@ -210,32 +210,89 @@ require_once 'winner_functions.php';
                 }
                 
                 // Display summary statistics
-                echo '<div class="summary-stats">';
+                echo '<div class="stats-grid">';
                 echo '<div class="stat-card">';
-                echo '<div class="stat-number">' . $result['total_unclaimed'] . '</div>';
-                echo '<div class="stat-label">Unclaimed Winners</div>';
+                echo '<div class="stat-number">' . ($result['total_unclaimed'] ?? 0) . '</div>';
+                echo '<div class="stat-label">Total Unclaimed</div>';
                 echo '</div>';
                 
                 // Calculate additional stats
                 $urgentCount = 0;
                 $recentCount = 0;
-                foreach ($result['unclaimed_winners'] as $winner) {
-                    if ($winner['days_since_win'] >= 5) {
-                        $urgentCount++;
-                    }
-                    if ($winner['days_since_win'] <= 2) {
-                        $recentCount++;
+                if (!empty($result['unclaimed_winners'])) {
+                    foreach ($result['unclaimed_winners'] as $winner) {
+                        if ($winner['days_since_win'] >= 5) {
+                            $urgentCount++;
+                        }
+                        if ($winner['days_since_win'] <= 2) {
+                            $recentCount++;
+                        }
                     }
                 }
                 
-                echo '<div class="stat-card" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24);">';
-                echo '<div class="stat-number">' . $urgentCount . '</div>';
+                echo '<div class="stat-card">';
+                echo '<div class="stat-number urgent">' . $urgentCount . '</div>';
                 echo '<div class="stat-label">Urgent (5+ days)</div>';
                 echo '</div>';
                 
-                echo '<div class="stat-card" style="background: linear-gradient(135deg, #28a745, #20bf6b);">';
-                echo '<div class="stat-number">' . $recentCount . '</div>';
+                echo '<div class="stat-card">';
+                echo '<div class="stat-number recent">' . $recentCount . '</div>';
                 echo '<div class="stat-label">Recent (≤2 days)</div>';
+                echo '</div>';
+                echo '</div>';
+                
+                // Phone Number Test Section
+                echo '<div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin: 30px 0; border: 2px solid #e9ecef;">';
+                echo '<h3 style="margin: 0 0 20px 0; color: #495057;">📱 Test Phone Number Lookup</h3>';
+                
+                $phoneTestResult = null;
+                if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['test_phone'])) {
+                    $testPhone = $_POST['test_phone'];
+                    if (!empty($testPhone)) {
+                        $phoneTestResult = getUnclaimedWinnerByPhoneForCurrentDraw($pdo, $testPhone);
+                    }
+                }
+                
+                echo '<form method="POST" style="display: flex; gap: 10px; margin-bottom: 20px;">';
+                echo '<input type="tel" name="test_phone" placeholder="Enter phone number (e.g., 548664851)" value="' . (isset($_POST['test_phone']) ? htmlspecialchars($_POST['test_phone']) : '') . '" style="flex: 1; padding: 12px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 16px;" pattern="[0-9]{9,10}" inputmode="numeric">';
+                echo '<button type="submit" name="test_phone_submit" style="padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">🔍 Test Phone</button>';
+                echo '</form>';
+                
+                if ($phoneTestResult) {
+                    $borderColor = $phoneTestResult['status'] === 'success' ? '#28a745' : ($phoneTestResult['status'] === 'not_found' ? '#ffc107' : '#dc3545');
+                    $textColor = $phoneTestResult['status'] === 'success' ? '#155724' : ($phoneTestResult['status'] === 'not_found' ? '#856404' : '#721c24');
+                    
+                    echo '<div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid ' . $borderColor . ';">';
+                    echo '<h4 style="margin: 0 0 15px 0; color: ' . $textColor . ';">' . ucfirst($phoneTestResult['status']) . '</h4>';
+                    echo '<p style="margin: 0 0 15px 0; color: #495057;">' . htmlspecialchars($phoneTestResult['message']) . '</p>';
+                    
+                    if ($phoneTestResult['status'] === 'success' && $phoneTestResult['unclaimed_winner']) {
+                        echo '<div style="background: #d4edda; padding: 15px; border-radius: 6px; margin-top: 15px;">';
+                        echo '<h5 style="margin: 0 0 10px 0; color: #155724;">🏆 Winner Details:</h5>';
+                        echo '<table style="width: 100%; border-collapse: collapse;">';
+                        echo '<tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #c3e6cb;">Name:</td><td style="padding: 8px; border-bottom: 1px solid #c3e6cb;">' . htmlspecialchars($phoneTestResult['unclaimed_winner']['name']) . '</td></tr>';
+                        echo '<tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #c3e6cb;">Phone:</td><td style="padding: 8px; border-bottom: 1px solid #c3e6cb;">' . htmlspecialchars($phoneTestResult['unclaimed_winner']['phone']) . '</td></tr>';
+                        echo '<tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #c3e6cb;">Draw Week:</td><td style="padding: 8px; border-bottom: 1px solid #c3e6cb;">' . htmlspecialchars($phoneTestResult['unclaimed_winner']['draw_week']) . '</td></tr>';
+                        echo '<tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #c3e6cb;">Draw Date:</td><td style="padding: 8px; border-bottom: 1px solid #c3e6cb;">' . date('F j, Y g:i A', strtotime($phoneTestResult['unclaimed_winner']['draw_date'])) . '</td></tr>';
+                        echo '<tr><td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #c3e6cb;">Won On:</td><td style="padding: 8px; border-bottom: 1px solid #c3e6cb;">' . date('F j, Y g:i A', strtotime($phoneTestResult['unclaimed_winner']['created_at'])) . '</td></tr>';
+                        
+                        $daysColor = $phoneTestResult['unclaimed_winner']['days_since_win'] >= 5 ? '#dc3545' : '#28a745';
+                        $daysText = $phoneTestResult['unclaimed_winner']['days_since_win'] >= 5 ? ' (URGENT!)' : '';
+                        
+                        echo '<tr><td style="padding: 8px; font-weight: bold;">Days Since Win:</td><td style="padding: 8px;"><span style="color: ' . $daysColor . '; font-weight: bold;">' . $phoneTestResult['unclaimed_winner']['days_since_win'] . ' days' . $daysText . '</span></td></tr>';
+                        echo '</table>';
+                        echo '</div>';
+                    }
+                    echo '</div>';
+                }
+                
+                echo '<div style="margin-top: 15px; font-size: 14px; color: #6c757d;">';
+                echo '<strong>💡 Tips:</strong>';
+                echo '<ul style="margin: 10px 0 0 20px; padding: 0;">';
+                echo '<li>Try phone numbers from the unclaimed winners list above</li>';
+                echo '<li>Format: 9-digit number (e.g., 548664851)</li>';
+                echo '<li>Works with different formats: 0548664851, +233548664851, 548664851</li>';
+                echo '</ul>';
                 echo '</div>';
                 echo '</div>';
                 

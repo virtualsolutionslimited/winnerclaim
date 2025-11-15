@@ -233,7 +233,7 @@ function initOtpFlow() {
 }
 
 // Handle Send OTP
-function handleSendOtp() {
+async function handleSendOtp() {
   const phone = phoneInput.value.trim();
 
   if (!phone) {
@@ -243,66 +243,162 @@ function handleSendOtp() {
     return;
   }
 
-  // Find if the phone number is a winner
-  const winner = findWinnerByPhone(phone);
-
-  if (!winner) {
-    const errorMessage = document.getElementById("error-message");
-    errorMessage.textContent =
-      "This phone number is not registered as a winner. Please check and try again.";
-    showModal("errorModal");
-    return;
-  }
-
-  currentUser = winner;
-
-  // Generate a 6-digit OTP
-  otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-  // In a real app, you would send this OTP via SMS
-  console.log(`OTP for ${phone}: ${otpCode}`);
-
-  // Show OTP input and start countdown
-  document.getElementById("otpSection").style.display = "block";
-  startOtpCountdown();
-
-  // Disable send OTP button for 30 seconds
+  // Disable button while processing
   sendOtpBtn.disabled = true;
-  setTimeout(() => {
+  sendOtpBtn.textContent = "Sending...";
+
+  try {
+    const response = await fetch("api_otp.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "send_otp",
+        phone: phone,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      // Store winner info for later use
+      currentUser = result.winner_info;
+
+      // Show success message
+      const successMessage = document.getElementById("success-message");
+      successMessage.textContent = result.message;
+      showModal("successModal");
+
+      // Show OTP input and start countdown
+      document.getElementById("otpSection").style.display = "block";
+      startOtpCountdown();
+
+      // Focus on first OTP input
+      const firstOtpInput = document.querySelector(".otp-digit");
+      if (firstOtpInput) {
+        firstOtpInput.focus();
+      }
+    } else {
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.textContent = result.message;
+      showModal("errorModal");
+    }
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    const errorMessage = document.getElementById("error-message");
+    errorMessage.textContent = "Network error. Please try again.";
+    showModal("errorModal");
+  } finally {
+    // Re-enable button
     sendOtpBtn.disabled = false;
-  }, 30000);
+    sendOtpBtn.textContent = "Send OTP";
+  }
 }
 
-// Handle Verify OTP - Modified to accept any 6-digit code
-function handleVerifyOtp() {
+// Handle Verify OTP
+async function handleVerifyOtp() {
   // Get all OTP input fields
   const otpInputs = document.querySelectorAll(".otp-digit");
   let enteredOtp = "";
 
   // Combine all OTP digits
   otpInputs.forEach((input) => {
-    enteredOtp += input.value || "0"; // Use '0' if empty to ensure we get 6 digits
+    enteredOtp += input.value || "";
   });
 
-  // Ensure we have exactly 6 digits (pad with zeros if needed)
-  enteredOtp = enteredOtp.padEnd(6, "0").substring(0, 6);
+  // Ensure we have exactly 6 digits
+  if (enteredOtp.length !== 6) {
+    const errorMessage = document.getElementById("error-message");
+    errorMessage.textContent =
+      "Please enter all 6 digits of the verification code";
+    showModal("errorModal");
+    return;
+  }
 
-  console.log("OTP verification bypassed. Using code:", enteredOtp);
+  // Get the phone number from the input
+  const phone = phoneInput.value.trim();
 
-  // Update verify button to show success
-  verifyOtpBtn.textContent = "✓ Verified";
-  verifyOtpBtn.style.backgroundColor = "#4CAF50";
-  verifyOtpBtn.style.color = "white";
-  verifyOtpBtn.style.borderColor = "#4CAF50";
+  if (!phone) {
+    const errorMessage = document.getElementById("error-message");
+    errorMessage.textContent = "Phone number is required for verification";
+    showModal("errorModal");
+    return;
+  }
+
+  // Disable verify button while processing
   verifyOtpBtn.disabled = true;
+  verifyOtpBtn.textContent = "Verifying...";
 
-  // Enable continue button with brand yellow background and deep blue text
-  const nextBtn = document.getElementById("nextBtn");
-  nextBtn.disabled = false;
-  nextBtn.style.backgroundColor = "var(--primary-color)"; // Brand yellow
-  nextBtn.style.color = "#170742"; // Deep blue text
+  try {
+    const response = await fetch("api_otp.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        action: "verify_otp",
+        phone: phone,
+        otp: enteredOtp,
+      }),
+    });
 
-  // Don't advance to next step - let user click continue
+    const result = await response.json();
+
+    if (result.status === "success" && result.verified) {
+      // Update verify button to show success
+      verifyOtpBtn.textContent = "✓ Verified";
+      verifyOtpBtn.style.backgroundColor = "#4CAF50";
+      verifyOtpBtn.style.color = "white";
+      verifyOtpBtn.style.borderColor = "#4CAF50";
+      verifyOtpBtn.disabled = true;
+
+      // Update current user info if returned
+      if (result.winner_info) {
+        currentUser = result.winner_info;
+      }
+
+      // Enable continue button with brand yellow background and deep blue text
+      const nextBtn = document.getElementById("nextBtn");
+      nextBtn.disabled = false;
+      nextBtn.style.backgroundColor = "var(--primary-color)"; // Brand yellow
+      nextBtn.style.color = "#170742"; // Deep blue text
+
+      // Show success message
+      const successMessage = document.getElementById("success-message");
+      successMessage.textContent = "Phone number verified successfully!";
+      showModal("successModal");
+    } else {
+      // Reset verify button
+      verifyOtpBtn.disabled = false;
+      verifyOtpBtn.textContent = "Verify OTP";
+
+      // Show error message
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.textContent =
+        result.message || "Invalid verification code. Please try again.";
+      showModal("errorModal");
+
+      // Clear OTP inputs for retry
+      otpInputs.forEach((input) => {
+        input.value = "";
+      });
+      // Focus on first input
+      if (otpInputs[0]) {
+        otpInputs[0].focus();
+      }
+    }
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+
+    // Reset verify button
+    verifyOtpBtn.disabled = false;
+    verifyOtpBtn.textContent = "Verify OTP";
+
+    const errorMessage = document.getElementById("error-message");
+    errorMessage.textContent = "Network error. Please try again.";
+    showModal("errorModal");
+  }
 }
 
 // Handle Resend OTP
