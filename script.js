@@ -214,20 +214,20 @@ function handleVerifyOtp() {
 
   console.log("OTP verification bypassed. Using code:", enteredOtp);
 
-  // Proceed to account creation
-  hideModal();
-  showModal("createAccountModal");
+  // Update verify button to show success
+  verifyOtpBtn.textContent = "✓ Verified";
+  verifyOtpBtn.style.backgroundColor = "#4CAF50";
+  verifyOtpBtn.style.color = "white";
+  verifyOtpBtn.style.borderColor = "#4CAF50";
+  verifyOtpBtn.disabled = true;
 
-  // Pre-fill phone number in account form
-  const accountPhone = document.getElementById("accountPhone");
-  if (accountPhone && currentUser) {
-    accountPhone.value = currentUser.phone;
-  }
+  // Enable continue button with brand yellow background and deep blue text
+  const nextBtn = document.getElementById("nextBtn");
+  nextBtn.disabled = false;
+  nextBtn.style.backgroundColor = "var(--primary-color)"; // Brand yellow
+  nextBtn.style.color = "#170742"; // Deep blue text
 
-  // Clear OTP fields
-  otpInputs.forEach((input) => {
-    input.value = "";
-  });
+  // Don't advance to next step - let user click continue
 }
 
 // Handle Resend OTP
@@ -754,15 +754,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Verify OTP
   verifyOtpBtn.addEventListener("click", () => {
-    const otp = otpInput.value;
+    // Get all OTP input fields and combine them
+    const otpInputs = document.querySelectorAll(".otp-digit");
+    let otp = "";
+    otpInputs.forEach((input) => {
+      otp += input.value || "";
+    });
 
     // In a real app, you would verify the OTP here
     // For demo purposes, we'll accept any 6-digit code
     if (otp.length === 6 && /^\d+$/.test(otp)) {
       clearInterval(otpCountdown);
-      document.getElementById("nextBtn").disabled = false;
-      verifyOtpBtn.textContent = "Verified ✓";
+
+      // Update verify button to show success
+      verifyOtpBtn.textContent = "✓ Verified";
       verifyOtpBtn.style.backgroundColor = "#4CAF50";
+      verifyOtpBtn.style.color = "white";
+      verifyOtpBtn.style.borderColor = "#4CAF50";
+      verifyOtpBtn.disabled = true;
+
+      // Enable continue button with brand yellow background and deep blue text
+      const nextBtn = document.getElementById("nextBtn");
+      nextBtn.disabled = false;
+      nextBtn.style.backgroundColor = "var(--primary-color)"; // Brand yellow
+      nextBtn.style.color = "#170742"; // Deep blue text
     }
   });
 
