@@ -1047,38 +1047,93 @@ function handleMyClaimsVerifyOtp() {
   // Ensure we have exactly 6 digits (pad with zeros if needed)
   enteredOtp = enteredOtp.padEnd(6, "0").substring(0, 6);
 
-  console.log("My Claims OTP verification bypassed. Using code:", enteredOtp);
-  console.log("Current user claims:", window.currentUserClaims);
+  console.log("Verifying OTP code:", enteredOtp);
+  console.log("For phone:", window.currentUserPhone);
 
-  // Update verify button to show success
-  myClaimsVerifyOtpBtn.textContent = "✓ Verified";
-  myClaimsVerifyOtpBtn.style.backgroundColor = "#4CAF50";
-  myClaimsVerifyOtpBtn.style.color = "white";
-  myClaimsVerifyOtpBtn.style.borderColor = "#4CAF50";
+  // Update verify button to show loading
+  myClaimsVerifyOtpBtn.textContent = "Verifying...";
   myClaimsVerifyOtpBtn.disabled = true;
 
-  // Clear countdown
-  clearInterval(myClaimsOtpCountdown);
+  // Call API to verify OTP
+  verifyClaimsOtp(window.currentUserPhone, enteredOtp);
+}
 
-  // Hide phone verification modal
-  console.log("Hiding myClaimsPhoneModal");
-  hideModal("myClaimsPhoneModal");
+// Verify OTP via API
+async function verifyClaimsOtp(phone, code) {
+  try {
+    const formData = new FormData();
+    formData.append("action", "verify_claims_otp");
+    formData.append("phone", phone);
+    formData.append("code", code);
 
-  // Show claims list using the stored claims data
-  if (window.currentUserClaims && window.currentUserClaims.length > 0) {
-    console.log("Showing claims list modal");
-    // Create a winner object with the claims data
-    const winnerData = {
-      name: window.currentUserClaims[0]?.name || "User",
-      phone: window.currentUserPhone,
-      claims: window.currentUserClaims,
-    };
-    showClaimsList(winnerData);
-    showModal("myClaimsListModal");
-  } else {
-    console.log("Showing no claims modal");
-    // This shouldn't happen since we check for claims earlier, but just in case
-    showModal("noClaimsModal");
+    const response = await fetch(".", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+    console.log("OTP verification response:", result);
+
+    if (result.verified) {
+      // Success - OTP verified
+      myClaimsVerifyOtpBtn.textContent = "✓ Verified";
+      myClaimsVerifyOtpBtn.style.backgroundColor = "#4CAF50";
+      myClaimsVerifyOtpBtn.style.color = "white";
+      myClaimsVerifyOtpBtn.style.borderColor = "#4CAF50";
+
+      // Clear countdown
+      clearInterval(myClaimsOtpCountdown);
+
+      // Hide phone verification modal
+      console.log("Hiding myClaimsPhoneModal");
+      hideModal("myClaimsPhoneModal");
+
+      // Show claims list using the verified claims data
+      if (result.claims && result.claims.length > 0) {
+        console.log("Showing claims list modal");
+        // Create a winner object with the claims data
+        const winnerData = {
+          name: result.winner?.name || result.claims[0]?.name || "User",
+          phone: phone,
+          claims: result.claims,
+        };
+        showClaimsList(winnerData);
+        showModal("myClaimsListModal");
+      } else {
+        console.log("Showing no claims modal");
+        // This shouldn't happen since we check for claims earlier, but just in case
+        showModal("noClaimsModal");
+      }
+    } else {
+      // Failed verification
+      myClaimsVerifyOtpBtn.textContent = "Verify Code";
+      myClaimsVerifyOtpBtn.style.backgroundColor = "";
+      myClaimsVerifyOtpBtn.style.color = "";
+      myClaimsVerifyOtpBtn.style.borderColor = "";
+      myClaimsVerifyOtpBtn.disabled = false;
+
+      // Show error message
+      showError(result.message || "Invalid verification code");
+
+      // Clear OTP inputs for retry
+      const myClaimsOtpInputs =
+        myClaimsOtpSection.querySelectorAll(".otp-digit");
+      myClaimsOtpInputs.forEach((input) => {
+        input.value = "";
+      });
+      myClaimsOtpInputs[0].focus();
+    }
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+
+    // Restore button state
+    myClaimsVerifyOtpBtn.textContent = "Verify Code";
+    myClaimsVerifyOtpBtn.style.backgroundColor = "";
+    myClaimsVerifyOtpBtn.style.color = "";
+    myClaimsVerifyOtpBtn.style.borderColor = "";
+    myClaimsVerifyOtpBtn.disabled = false;
+
+    showError("Network error. Please try again.");
   }
 }
 

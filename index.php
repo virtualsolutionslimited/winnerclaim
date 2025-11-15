@@ -57,6 +57,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             echo json_encode($response);
             exit;
         }
+        
+        if ($_POST['action'] === 'verify_claims_otp') {
+            $phone = $_POST['phone'] ?? '';
+            $code = $_POST['code'] ?? '';
+            
+            if (empty($phone) || empty($code)) {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Phone number and verification code are required'
+                ]);
+                exit;
+            }
+            
+            // For claims verification, we need to check OTP across all draw weeks
+            // Let's create a custom verification for claims
+            try {
+                $cleanPhone = normalizePhoneNumber($phone);
+                
+                // Check OTP in winners table across all draw weeks
+                $stmt = $pdo->prepare("
+                    SELECT * FROM winners 
+                    WHERE otp = ? AND is_claimed = 1 AND (
+                        phone = ? OR
+                        phone = ? OR
+                        REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '(', '') = ? OR
+                        REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '(', '') LIKE ? OR
+                        phone LIKE ? OR
+                        -- Also check with leading zero
+                        REPLACE(REPLACE(REPLACE(CONCAT('0', phone), ' ', ''), '-', ''), '(', '') = ? OR
+                        CONCAT('0', phone) = ?
+                    )
+                ");
+                
+                $searchPatterns = [
+                    $code,                                  // OTP code
+                    $cleanPhone,                            // Cleaned phone
+                    $phone,                                 // Original phone
+                    $cleanPhone,                            // Cleaned without spaces/dashes
+                    $cleanPhone . '%',                      // Starts with
+                    '%' . $cleanPhone . '%',                // Contains
+                    $cleanPhone,                            // With leading zero
+                    $phone                                  // Original with leading zero
+                ];
+                
+                $stmt->execute($searchPatterns);
+                $winner = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($winner) {
+                    // Clear OTP after successful verification
+                    $clearStmt = $pdo->prepare("UPDATE winners SET otp = NULL WHERE id = ?");
+                    $clearStmt->execute([$winner['id']]);
+                    
+                    // Get claims for this verified user
+                    $claimsResult = getClaimsByPhone($pdo, $phone);
+                    
+                    echo json_encode([
+                        'status' => 'success',
+                        'message' => 'Code verified successfully',
+                        'verified' => true,
+                        'winner' => [
+                            'id' => $winner['id'],
+                            'name' => $winner['name'],
+                            'phone' => $winner['phone']
+                        ],
+                        'claims' => $claimsResult['claims'],
+                        'total_claims' => $claimsResult['total_claims']
+                    ]);
+                    exit;
+                } else {
+                    echo json_encode([
+                        'status' => 'error',
+                        'message' => 'Invalid or expired verification code',
+                        'verified' => false
+                    ]);
+                    exit;
+                }
+                
+            } catch (PDOException $e) {
+                error_log("Error verifying claims OTP: " . $e->getMessage());
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Verification failed: ' . $e->getMessage(),
+                    'verified' => false
+                ]);
+                exit;
+            }
+        }
     } catch (Exception $e) {
         echo json_encode([
             'status' => 'error',
