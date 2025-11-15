@@ -114,7 +114,7 @@ body {
   grid-template-columns: repeat(5, minmax(220px, 1fr));
   gap: var(--spacing-md);
   margin: var(--spacing-xl) 0;
-  text-align: left;
+  text-align: center;
 }
 
 .step {
@@ -916,6 +916,103 @@ p {
   font-size: 0.85rem;
   margin-top: 5px;
   display: block;
+}
+
+/* Camera Modal Styles */
+.camera-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-modal.show {
+  display: flex;
+}
+
+.camera-container {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  height: 480px;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+#cameraVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 15px 25px;
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+}
+
+.camera-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.camera-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.camera-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.camera-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.camera-shutter {
+  width: 60px;
+  height: 60px;
+  background: var(--primary-color);
+  border: 4px solid #fff;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.camera-shutter:hover {
+  transform: scale(1.1);
+  background: var(--primary-hover);
+}
+
+.camera-shutter:active {
+  transform: scale(0.95);
+}
+
+#cameraCanvas {
+  display: none;
 }
 
 /* Form Actions */
