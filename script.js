@@ -644,13 +644,6 @@ function showSuccessMessage() {
 
 // Initialize Modals
 function initModals() {
-  // Close modals when clicking outside
-  window.addEventListener("click", (e) => {
-    if (e.target.classList.contains("modal")) {
-      hideModal();
-    }
-  });
-
   // Close button handlers
   document.querySelectorAll(".close-btn").forEach((btn) => {
     btn.addEventListener("click", hideModal);
@@ -715,13 +708,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Close button handlers
   document.querySelectorAll(".close-btn").forEach((btn) => {
     btn.addEventListener("click", hideModal);
-  });
-
-  // Handle clicks outside modal
-  window.addEventListener("click", (e) => {
-    if (e.target.classList.contains("modal")) {
-      hideModal();
-    }
   });
 
   // Back button handlers
