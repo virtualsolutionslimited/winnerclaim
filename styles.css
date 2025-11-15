@@ -305,6 +305,21 @@ p {
   width: 90%;
 }
 
+.claims-modal .modal-header {
+  color: #170742;
+  padding: 2rem;
+  margin: -2rem -2rem 1rem -2rem;
+  border-radius: 12px 12px 0 0;
+}
+
+.claims-modal .modal-header h2 {
+  color: #170742;
+}
+
+.claims-modal .modal-header p {
+  color: #170742;
+}
+
 .claims-table-container {
   max-height: 400px;
   overflow-y: auto;
@@ -325,9 +340,9 @@ p {
 }
 
 .claims-table th {
-  background-color: #f8f9fa;
+  background-color: #fcd115;
+  color: #170742;
   font-weight: 600;
-  color: var(--text-primary);
   position: sticky;
   top: 0;
 }
@@ -337,11 +352,11 @@ p {
 }
 
 .download-btn {
-  background-color: var(--accent-color);
+  background-color: #fcd115;
   color: #170742;
   border: none;
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
