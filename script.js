@@ -765,7 +765,14 @@ function initKycForm() {
 function initModals() {
   // Close button handlers
   document.querySelectorAll(".close-btn").forEach((btn) => {
-    btn.addEventListener("click", hideModal);
+    btn.addEventListener("click", (e) => {
+      const modal = e.target.closest(".modal");
+      if (modal) {
+        hideModal(modal.id);
+      } else {
+        hideModal();
+      }
+    });
   });
 }
 
@@ -934,11 +941,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // My Claims button handler
   myClaimsBtn.addEventListener("click", () => {
     showModal("myClaimsPhoneModal");
-  });
-
-  // Close button handlers
-  document.querySelectorAll(".close-btn").forEach((btn) => {
-    btn.addEventListener("click", hideModal);
   });
 
   // Back button handlers
