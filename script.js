@@ -317,28 +317,7 @@ function initAccountForm() {
     privacyCheckbox.addEventListener("change", updateSubmitButton);
 
   // Add toggle functionality for confirm password
-  const toggleConfirmPassword = document.getElementById(
-    "toggleConfirmPassword"
-  );
-  if (toggleConfirmPassword && confirmPasswordField) {
-    toggleConfirmPassword.addEventListener("click", () => {
-      console.log("Toggle clicked, current type:", confirmPasswordField.type);
-      if (confirmPasswordField.type === "password") {
-        confirmPasswordField.type = "text";
-        toggleConfirmPassword.textContent = "👁️";
-        console.log("Changed to text");
-      } else {
-        confirmPasswordField.type = "password";
-        toggleConfirmPassword.textContent = "👁️";
-        console.log("Changed to password");
-      }
-    });
-  } else {
-    console.log("Toggle or field not found:", {
-      toggleConfirmPassword: !!toggleConfirmPassword,
-      confirmPasswordField: !!confirmPasswordField,
-    });
-  }
+  // This will be set up globally below
 
   // Initialize button state
   updateSubmitButton();
@@ -1040,6 +1019,22 @@ document.addEventListener("DOMContentLoaded", () => {
       icon.textContent = "👁️";
     }
   });
+
+  // Toggle confirm password visibility
+  document
+    .getElementById("toggleConfirmPassword")
+    .addEventListener("click", () => {
+      const confirmPasswordInput = document.getElementById("confirmPassword");
+      const icon = document.getElementById("toggleConfirmPassword");
+
+      if (confirmPasswordInput.type === "password") {
+        confirmPasswordInput.type = "text";
+        icon.textContent = "👁️";
+      } else {
+        confirmPasswordInput.type = "password";
+        icon.textContent = "👁️";
+      }
+    });
 
   // Selfie upload
   const selfieUpload = document.getElementById("selfieUpload");
