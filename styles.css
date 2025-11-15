@@ -359,10 +359,10 @@ p {
 
 .modal-content {
   background-color: #170742;
-  padding: 2.5rem 2rem;
+  padding: 3rem 2.5rem;
   border-radius: 12px;
   width: 100%;
-  max-width: 450px;
+  max-width: 650px;
   position: relative;
   transform: translateY(-20px);
   transition: transform 0.3s ease, opacity 0.3s ease;
