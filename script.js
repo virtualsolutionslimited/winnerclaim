@@ -729,9 +729,12 @@ function initKycForm() {
       });
     }
 
-    // Show success message
+    // Show success modal
     hideModal();
-    showSuccessMessage();
+    const successModal = document.getElementById("successModal");
+    if (successModal) {
+      successModal.classList.add("show");
+    }
   }
 
   // Clean up camera on page unload
@@ -740,38 +743,6 @@ function initKycForm() {
       stopCamera();
     }
   });
-}
-
-// Show success message
-function showSuccessMessage() {
-  const successHtml = `
-    <div class="success-message">
-      <h2>🎉 Congratulations! 🎉</h2>
-      <p>Your prize claim has been successfully submitted!</p>
-      <p>You'll receive an email/SMS confirmation shortly.</p>
-      <p>Next step: A Visa agent will contact you by phone/email to start your visa application process.</p>
-      <button class="btn primary-btn" onclick="hideModal()">Close</button>
-    </div>
-  `;
-
-  const modal = document.createElement("div");
-  modal.className = "modal show";
-  modal.innerHTML = `
-    <div class="modal-content" style="max-width: 600px; text-align: center;">
-      <span class="close-btn">&times;</span>
-      ${successHtml}
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  // Add close button handler
-  modal.querySelector(".close-btn").addEventListener("click", () => {
-    document.body.removeChild(modal);
-    document.body.style.overflow = "";
-  });
-
-  document.body.style.overflow = "hidden";
 }
 
 // Initialize Modals
