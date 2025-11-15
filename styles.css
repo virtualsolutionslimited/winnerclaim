@@ -376,6 +376,11 @@ p {
   opacity: 1;
 }
 
+/* Create Account Modal - Wider */
+#createAccountModal .modal-content {
+  max-width: 850px;
+}
+
 /* Ensure modal is centered on mobile */
 @media (max-width: 480px) {
   .modal {
