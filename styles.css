@@ -715,6 +715,18 @@ p {
   box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
 }
 
+/* Contract Modal Button Styling */
+#contractModal #acceptContractBtn {
+  color: #170742 !important;
+}
+
+#contractModal #acceptContractBtn:hover {
+  background-color: var(--primary-color) !important;
+  color: #170742 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(23, 7, 66, 0.2);
+}
+
 .ok-btn {
   background: transparent;
   color: var(--primary-color);
