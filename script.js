@@ -41,10 +41,18 @@ let countdownInterval;
 let file = null;
 
 function startCountdown() {
-  // Set the target date to 5 days from now
+  // Use the claim window date from PHP, or fallback to 5 days from now
   const now = new Date();
-  const targetDate = new Date(now);
-  targetDate.setDate(now.getDate() + 5);
+  let targetDate;
+
+  if (window.claimWindowDate) {
+    // Use the claim window date from PHP
+    targetDate = new Date(window.claimWindowDate);
+  } else {
+    // Fallback: 5 days from now
+    targetDate = new Date(now);
+    targetDate.setDate(now.getDate() + 5);
+  }
 
   // Set the initial countdown values
   updateCountdown(targetDate);

@@ -1,3 +1,23 @@
+<?php
+require_once 'db.php';
+require_once 'draw_functions.php';
+
+// Get current draw week
+$currentDraw = getCurrentDrawWeek($pdo);
+$claimWindowDate = null;
+$claimWindowText = 'Claim window: ';
+
+if ($currentDraw) {
+    // Calculate claim window: 5 days from draw date
+    $drawDate = new DateTime($currentDraw['date']);
+    $claimWindowDate = clone $drawDate;
+    $claimWindowDate->add(new DateInterval('P5D')); // Add 5 days
+    
+    $claimWindowText .= '5 days from ' . $drawDate->format('F j, Y');
+} else {
+    $claimWindowText .= 'No current draw available';
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -28,7 +48,7 @@
           <span class="banner-icon">⏳</span>
           <div class="banner-text">
             <div class="banner-title">
-              Claim window: 5 days from 16th November 2025
+              <?php echo htmlspecialchars($claimWindowText); ?>
             </div>
             <div class="countdown-display">
               Time remaining: <span id="countdown-display">4d 23h 59m</span>
@@ -582,6 +602,10 @@
       </div>
     </div>
 
+    <script>
+        // Pass claim window date from PHP to JavaScript
+        window.claimWindowDate = <?php echo $claimWindowDate ? $claimWindowDate->format('Y-m-d H:i:s') : 'null'; ?>;
+    </script>
     <script type="module" src="script.js"></script>
   </body>
 </html>
