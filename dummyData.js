@@ -101,6 +101,24 @@ const dummyWinners = [
     contractAccepted: false,
     kycCompleted: false,
   },
+  {
+    phone: "0244691019",
+    name: "David Kattah",
+    email: "david.kattah@example.com",
+    ghanaCard: "GHA-901234567-8",
+    age: 29,
+    verified: false,
+    contractAccepted: false,
+    kycCompleted: false,
+    claims: [
+      {
+        id: "CLAIM004",
+        prizeName: "Week 4",
+        date: "2024-10-15",
+        status: "completed",
+      },
+    ],
+  },
 ];
 
 // Function to find winner by phone number
