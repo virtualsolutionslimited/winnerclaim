@@ -1,6 +1,52 @@
 <?php
 require_once 'db.php';
 require_once 'draw_functions.php';
+require_once 'winner_functions.php';
+
+// Handle API requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    header('Content-Type: application/json');
+    
+    try {
+        if ($_POST['action'] === 'check_claims_by_phone') {
+            $phone = $_POST['phone'] ?? '';
+            
+            if (empty($phone)) {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Phone number is required'
+                ]);
+                exit;
+            }
+            
+            $claimsResult = getClaimsByPhone($pdo, $phone);
+            
+            if ($claimsResult['status'] === 'error') {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => $claimsResult['message']
+                ]);
+                exit;
+            }
+            
+            // Always return success (even with 0 claims) to match the test_claims.php behavior
+            echo json_encode([
+                'status' => 'success',
+                'message' => $claimsResult['total_claims'] > 0 ? 'Claims found' : 'No claims found',
+                'phone_searched' => $claimsResult['phone_searched'],
+                'total_claims' => $claimsResult['total_claims'],
+                'claims' => $claimsResult['claims']
+            ]);
+            exit;
+        }
+    } catch (Exception $e) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Server error: ' . $e->getMessage()
+        ]);
+        exit;
+    }
+}
 
 // Get current draw week
 $currentDraw = getCurrentDrawWeek($pdo);
@@ -555,18 +601,48 @@ if ($currentDraw) {
     <div class="modal" id="myClaimsPhoneModal">
       <div class="modal-content">
         <span class="close-btn">&times;</span>
-        <h2>Verify Your Phone Number</h2>
-        <p>Enter your phone number to view your claims</p>
         
-        <form id="myClaimsPhoneForm" class="verification-form">
-          <div class="form-group">
-            <label for="myClaimsPhone">Phone Number</label>
-            <div class="input-with-button">
-              <input type="tel" id="myClaimsPhone" placeholder="Enter your phone number" required />
-              <button type="submit" class="verify-btn">Verify</button>
-            </div>
+        <!-- Phone Verification Section -->
+        <div id="myClaimsPhoneSection">
+          <div class="modal-header">
+            <h2>Verify Your Phone Number</h2>
+            <p>Enter your phone number to view your claims</p>
           </div>
-        </form>
+          
+          <form id="myClaimsPhoneForm" class="verification-form">
+            <div class="form-group">
+              <label for="myClaimsPhone">Phone Number</label>
+              <div class="input-with-button">
+                <input type="tel" id="myClaimsPhone" placeholder="Enter your phone number" required />
+                <button type="submit" class="verify-btn">Verify</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        
+        <!-- OTP Section (Initially Hidden) -->
+        <div id="myClaimsOtpSection" style="display: none;">
+          <div class="modal-header">
+            <h2>Enter Verification Code</h2>
+            <p>We've sent a 6-digit code to your phone</p>
+          </div>
+          
+          <div class="otp-container">
+            <input type="text" class="otp-digit" maxlength="1" />
+            <input type="text" class="otp-digit" maxlength="1" />
+            <input type="text" class="otp-digit" maxlength="1" />
+            <input type="text" class="otp-digit" maxlength="1" />
+            <input type="text" class="otp-digit" maxlength="1" />
+            <input type="text" class="otp-digit" maxlength="1" />
+          </div>
+          
+          <div class="otp-timer" id="myClaimsOtpTimer">2:00</div>
+          
+          <div class="form-actions">
+            <button type="button" id="myClaimsVerifyOtpBtn" class="btn btn-primary" disabled>Verify Code</button>
+            <button type="button" id="myClaimsResendOtp" class="resend-btn" style="display: none;">Resend Code</button>
+          </div>
+        </div>
       </div>
     </div>
 
