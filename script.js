@@ -916,6 +916,9 @@ function initMyClaimsPhoneForm() {
 
       if (result.status === "success" && result.total_claims > 0) {
         console.log("Claims found, proceeding with OTP");
+        console.log("OTP sent:", result.otp_sent);
+        console.log("OTP code (for testing):", result.otp_code);
+
         // Store claims data for later use
         window.currentUserClaims = result.claims;
         window.currentUserPhone = phoneNumber;
@@ -926,13 +929,19 @@ function initMyClaimsPhoneForm() {
           name: result.claims[0]?.name || "User",
         };
 
-        // Generate OTP for verification
-        myClaimsOtpCode = Math.floor(
-          100000 + Math.random() * 900000
-        ).toString();
-
-        // Log OTP for testing
-        console.log(`My Claims OTP for ${phoneNumber}: ${myClaimsOtpCode}`);
+        // Use the OTP code sent via SMS (for testing, we have it in the response)
+        if (result.otp_sent && result.otp_code) {
+          myClaimsOtpCode = result.otp_code;
+          console.log(`Using OTP sent to ${phoneNumber}: ${myClaimsOtpCode}`);
+        } else {
+          // Fallback: generate OTP locally if SMS failed
+          myClaimsOtpCode = Math.floor(
+            100000 + Math.random() * 900000
+          ).toString();
+          console.log(
+            `SMS failed, using local OTP for ${phoneNumber}: ${myClaimsOtpCode}`
+          );
+        }
 
         // Hide phone section and show OTP section
         document.getElementById("myClaimsPhoneSection").style.display = "none";
@@ -1074,34 +1083,77 @@ function handleMyClaimsVerifyOtp() {
 }
 
 // Handle My Claims Resend OTP
-function handleMyClaimsResendOtp() {
+async function handleMyClaimsResendOtp() {
   if (!currentUser) return;
 
-  // Generate new OTP
-  myClaimsOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  console.log(`New My Claims OTP for ${currentUser.phone}: ${myClaimsOtpCode}`);
+  try {
+    // Show loading state
+    const resendBtn = document.getElementById("myClaimsResendOtp");
+    const originalText = resendBtn.textContent;
+    resendBtn.textContent = "Sending...";
+    resendBtn.disabled = true;
 
-  // Reset OTP inputs
-  const myClaimsOtpInputs = myClaimsOtpSection.querySelectorAll(".otp-digit");
-  myClaimsOtpInputs.forEach((input) => {
-    input.value = "";
-  });
+    // Call API to resend OTP
+    const formData = new FormData();
+    formData.append("action", "check_claims_by_phone");
+    formData.append("phone", currentUser.phone);
 
-  // Reset verify button
-  myClaimsVerifyOtpBtn.textContent = "Verify Code";
-  myClaimsVerifyOtpBtn.style.backgroundColor = "";
-  myClaimsVerifyOtpBtn.style.color = "";
-  myClaimsVerifyOtpBtn.style.borderColor = "";
-  myClaimsVerifyOtpBtn.disabled = true;
+    const response = await fetch(".", {
+      method: "POST",
+      body: formData,
+    });
 
-  // Hide resend button and restart countdown
-  myClaimsResendOtp.style.display = "none";
-  startMyClaimsOtpCountdown();
+    const result = await response.json();
+    console.log("Resend OTP response:", result);
 
-  // Focus first OTP input
-  const firstOtpInput = myClaimsOtpSection.querySelector(".otp-digit");
-  if (firstOtpInput) {
-    firstOtpInput.focus();
+    // Restore button state
+    resendBtn.textContent = originalText;
+    resendBtn.disabled = false;
+
+    if (result.status === "success" && result.otp_sent) {
+      myClaimsOtpCode = result.otp_code;
+      console.log(`New OTP sent to ${currentUser.phone}: ${myClaimsOtpCode}`);
+
+      // Show success message
+      showError("New verification code sent to your phone");
+    } else {
+      // Fallback: generate locally
+      myClaimsOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log(`Failed to send SMS, using local OTP: ${myClaimsOtpCode}`);
+      showError("Failed to send SMS. Using test code: " + myClaimsOtpCode);
+    }
+
+    // Reset OTP inputs
+    const myClaimsOtpInputs = myClaimsOtpSection.querySelectorAll(".otp-digit");
+    myClaimsOtpInputs.forEach((input) => {
+      input.value = "";
+    });
+
+    // Reset verify button
+    myClaimsVerifyOtpBtn.textContent = "Verify Code";
+    myClaimsVerifyOtpBtn.style.backgroundColor = "";
+    myClaimsVerifyOtpBtn.style.color = "";
+    myClaimsVerifyOtpBtn.style.borderColor = "";
+    myClaimsVerifyOtpBtn.disabled = true;
+
+    // Hide resend button and restart countdown
+    myClaimsResendOtp.style.display = "none";
+    startMyClaimsOtpCountdown();
+
+    // Focus first OTP input
+    const firstOtpInput = myClaimsOtpSection.querySelector(".otp-digit");
+    if (firstOtpInput) {
+      firstOtpInput.focus();
+    }
+  } catch (error) {
+    console.error("Error resending OTP:", error);
+
+    // Restore button state
+    const resendBtn = document.getElementById("myClaimsResendOtp");
+    resendBtn.textContent = "Resend Code";
+    resendBtn.disabled = false;
+
+    showError("Network error. Please try again.");
   }
 }
 function showClaimsList(winner) {

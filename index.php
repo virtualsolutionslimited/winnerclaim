@@ -2,6 +2,7 @@
 require_once 'db.php';
 require_once 'draw_functions.php';
 require_once 'winner_functions.php';
+require_once 'sms_functions.php';
 
 // Handle API requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -30,13 +31,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
             
             // Always return success (even with 0 claims) to match the test_claims.php behavior
-            echo json_encode([
+            $response = [
                 'status' => 'success',
                 'message' => $claimsResult['total_claims'] > 0 ? 'Claims found' : 'No claims found',
                 'phone_searched' => $claimsResult['phone_searched'],
                 'total_claims' => $claimsResult['total_claims'],
                 'claims' => $claimsResult['claims']
-            ]);
+            ];
+            
+            // If claims are found, send OTP for verification
+            if ($claimsResult['total_claims'] > 0) {
+                $otpResult = sendOTP($phone, 'verification');
+                
+                if ($otpResult['status'] === 'success') {
+                    $response['otp_sent'] = true;
+                    $response['otp_message'] = 'Verification code sent to your phone';
+                    // In production, don't include the actual code
+                    $response['otp_code'] = $otpResult['code']; // For testing only
+                } else {
+                    $response['otp_sent'] = false;
+                    $response['otp_message'] = 'Failed to send verification code';
+                }
+            }
+            
+            echo json_encode($response);
             exit;
         }
     } catch (Exception $e) {
