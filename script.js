@@ -629,7 +629,17 @@ function initKycForm() {
   // Handle retake photo
   if (retakeBtn) {
     retakeBtn.addEventListener("click", () => {
-      resetImagePreview();
+      // Check if this was a camera capture
+      if (
+        capturedImage &&
+        capturedImage.name &&
+        capturedImage.name.startsWith("capture_")
+      ) {
+        resetImagePreview();
+        startCamera(); // Restart camera for retake
+      } else {
+        resetImagePreview();
+      }
     });
   }
 
@@ -659,8 +669,19 @@ function initKycForm() {
     const reader = new FileReader();
     reader.onload = (e) => {
       previewImage.src = e.target.result;
-      uploadPlaceholder.style.display = "none";
-      document.querySelector(".preview-container").style.display = "flex";
+      uploadPreview.style.display = "block";
+
+      // Show retake button only for camera captures
+      const previewActions = document.getElementById("previewActions");
+      if (
+        previewActions &&
+        file.type === "image/jpeg" &&
+        capturedImage &&
+        capturedImage.name.startsWith("capture_")
+      ) {
+        previewActions.style.display = "block";
+      }
+
       validateKycForm();
     };
     reader.readAsDataURL(file);
@@ -668,15 +689,15 @@ function initKycForm() {
 
   // Reset image preview
   function resetImagePreview() {
-    const uploadPlaceholder = document.getElementById("uploadPlaceholder");
-    const previewContainer = document.querySelector(".preview-container");
+    const uploadPreview = document.getElementById("uploadPreview");
     const previewImage = document.getElementById("previewImage");
     const fileInput = document.getElementById("fileInput");
+    const previewActions = document.getElementById("previewActions");
 
-    if (uploadPlaceholder) uploadPlaceholder.style.display = "flex";
-    if (previewContainer) previewContainer.style.display = "none";
+    if (uploadPreview) uploadPreview.style.display = "none";
     if (previewImage) previewImage.src = "";
     if (fileInput) fileInput.value = "";
+    if (previewActions) previewActions.style.display = "none";
 
     capturedImage = null;
     validateKycForm();

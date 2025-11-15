@@ -387,13 +387,12 @@
           </div>
           
           <div class="form-group">
-            <label>Upload a clear photo of yourself</label>
-            <p class="upload-instructions">Take a selfie or upload a clear photo where your face is fully visible</p>
+            <label>Upload Your Photo</label>
             
             <div class="upload-options">
               <div class="upload-option" id="cameraOption" style="">
                 <div class="upload-icon">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                     <circle cx="12" cy="13" r="4"></circle>
                   </svg>
@@ -404,32 +403,21 @@
               
               <div class="upload-option" id="fileOption">
                 <div class="upload-icon">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="17 8 12 3 7 8"></polyline>
                     <line x1="12" y1="3" x2="12" y2="15"></line>
                   </svg>
                 </div>
-                <span>Upload Ghana Card Photo</span>
+                <span>Upload Ghana Card</span>
                 <input type="file" id="fileInput" accept="image/*" style="display: none;">
               </div>
             </div>
             
-            <div class="upload-preview" id="uploadPreview">
-              <div class="upload-placeholder" id="uploadPlaceholder">
-                <div class="upload-icon">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                  </svg>
-                </div>
-                <p>Your photo will appear here</p>
-                <small class="text-muted">Make sure your face is clearly visible</small>
-              </div>
+            <div class="upload-preview" id="uploadPreview" style="display: none;">
               <div class="preview-container">
                 <img id="previewImage" alt="Preview" class="preview-img">
-                <div class="preview-actions">
+                <div class="preview-actions" id="previewActions" style="display: none;">
                   <button type="button" class="btn retake-btn" id="retakeBtn">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="1 4 1 10 7 10"></polyline>
@@ -440,16 +428,6 @@
                   </button>
                 </div>
               </div>
-            </div>
-            
-            <div class="photo-requirements">
-              <p class="requirements-title">Photo Requirements:</p>
-              <ul class="requirements-list">
-                <li>Face must be clearly visible</li>
-                <li>Good lighting is recommended</li>
-                <li>No sunglasses or face coverings</li>
-                <li>Look directly at the camera</li>
-              </ul>
             </div>
           </div>
 
