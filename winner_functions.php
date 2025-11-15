@@ -1,6 +1,24 @@
 <?php
 require_once 'db.php';
+require_once 'sms_functions.php';
 require_once 'draw_functions.php';
+
+/**
+ * Normalize phone number by removing leading zero and cleaning formatting
+ * @param string $phone The phone number to normalize
+ * @return string The normalized phone number
+ */
+function normalizePhoneNumber($phone) {
+    // Remove spaces, dashes, parentheses
+    $cleanPhone = preg_replace('/[\s\-\(\)]/', '', $phone);
+    
+    // Remove leading zero if present (Ghana numbers often stored without 0 prefix)
+    if (strlen($cleanPhone) > 9 && substr($cleanPhone, 0, 1) === '0') {
+        return substr($cleanPhone, 1);
+    }
+    
+    return $cleanPhone;
+}
 
 /**
  * Check if a phone number exists for the current draw week
@@ -10,8 +28,9 @@ require_once 'draw_functions.php';
  */
 function checkWinnerForCurrentWeek($pdo, $phone) {
     try {
-        // Clean the phone number (remove spaces, dashes, parentheses)
-        $cleanPhone = preg_replace('/[\s\-\(\)]/', '', $phone);
+        // Normalize the phone number (remove leading zero and formatting)
+        $cleanPhone = normalizePhoneNumber($phone);
+        $originalPhone = normalizePhoneNumber($phone); // Keep original for comparison
         
         // Get the current draw week
         $currentDraw = getCurrentDrawWeek($pdo);
@@ -24,7 +43,7 @@ function checkWinnerForCurrentWeek($pdo, $phone) {
             ];
         }
         
-        // Search for the phone number in the current draw week
+        // Search for the phone number in the current draw week with flexible matching
         $stmt = $pdo->prepare("
             SELECT w.*, d.date as draw_date 
             FROM winners w 
@@ -33,15 +52,20 @@ function checkWinnerForCurrentWeek($pdo, $phone) {
                 REPLACE(REPLACE(REPLACE(w.phone, ' ', ''), '-', ''), '(', '') = ? OR
                 REPLACE(REPLACE(REPLACE(w.phone, ' ', ''), '-', ''), '(', '') LIKE ? OR
                 w.phone LIKE ? OR
-                w.phone = ?
+                w.phone = ? OR
+                -- Also check with leading zero (database might have it without zero)
+                REPLACE(REPLACE(REPLACE(CONCAT('0', w.phone), ' ', ''), '-', ''), '(', '') = ? OR
+                CONCAT('0', w.phone) = ?
             )
         ");
         
         $searchPatterns = [
-            $cleanPhone,                    // Exact match after cleaning
-            $cleanPhone . '%',              // Starts with cleaned number
-            '%' . $phone . '%',             // Contains original number
-            $phone                          // Exact original match
+            $cleanPhone,                    // Exact match without zero
+            $cleanPhone . '%',              // Starts with
+            '%' . $cleanPhone . '%',        // Contains
+            $cleanPhone,                    // Direct match
+            $cleanPhone,                    // Match with zero added to database value
+            $cleanPhone                     // Direct match with zero
         ];
         
         $stmt->execute([$currentDraw['id'], ...$searchPatterns]);
@@ -120,7 +144,7 @@ function getCurrentWeekWinners($pdo) {
  */
 function searchWinnerByPhone($pdo, $phone) {
     try {
-        $cleanPhone = preg_replace('/[\s\-\(\)]/', '', $phone);
+        $cleanPhone = normalizePhoneNumber($phone);
         
         $stmt = $pdo->prepare("
             SELECT w.*, d.date as draw_date, 
@@ -135,16 +159,21 @@ function searchWinnerByPhone($pdo, $phone) {
                 REPLACE(REPLACE(REPLACE(w.phone, ' ', ''), '-', ''), '(', '') = ? OR
                 REPLACE(REPLACE(REPLACE(w.phone, ' ', ''), '-', ''), '(', '') LIKE ? OR
                 w.phone LIKE ? OR
-                w.phone = ?
+                w.phone = ? OR
+                -- Also check with leading zero (database might have it without zero)
+                REPLACE(REPLACE(REPLACE(CONCAT('0', w.phone), ' ', ''), '-', ''), '(', '') = ? OR
+                CONCAT('0', w.phone) = ?
             )
             ORDER BY d.date DESC, w.createdAt DESC
         ");
         
         $searchPatterns = [
-            $cleanPhone,
-            $cleanPhone . '%',
-            '%' . $phone . '%',
-            $phone
+            $cleanPhone,                    // Exact match without zero
+            $cleanPhone . '%',              // Starts with
+            '%' . $cleanPhone . '%',        // Contains
+            $cleanPhone,                    // Direct match
+            $cleanPhone,                    // Match with zero added to database value
+            $cleanPhone                     // Direct match with zero
         ];
         
         $stmt->execute($searchPatterns);
@@ -164,8 +193,8 @@ function searchWinnerByPhone($pdo, $phone) {
  */
 function getClaimsByPhone($pdo, $phone) {
     try {
-        // Clean the phone number for matching
-        $cleanPhone = preg_replace('/[\s\-\(\)]/', '', $phone);
+        // Normalize the phone number for matching
+        $cleanPhone = normalizePhoneNumber($phone);
         
         $stmt = $pdo->prepare("
             SELECT w.*, d.date as draw_date,
@@ -180,16 +209,21 @@ function getClaimsByPhone($pdo, $phone) {
                 REPLACE(REPLACE(REPLACE(w.phone, ' ', ''), '-', ''), '(', '') = ? OR
                 REPLACE(REPLACE(REPLACE(w.phone, ' ', ''), '-', ''), '(', '') LIKE ? OR
                 w.phone LIKE ? OR
-                w.phone = ?
+                w.phone = ? OR
+                -- Also check with leading zero (database might have it without zero)
+                REPLACE(REPLACE(REPLACE(CONCAT('0', w.phone), ' ', ''), '-', ''), '(', '') = ? OR
+                CONCAT('0', w.phone) = ?
             )
             ORDER BY d.date DESC, w.updatedAt DESC
         ");
         
         $searchPatterns = [
-            $cleanPhone,
-            $cleanPhone . '%',
-            '%' . $phone . '%',
-            $phone
+            $cleanPhone,                    // Exact match without zero
+            $cleanPhone . '%',              // Starts with
+            '%' . $cleanPhone . '%',        // Contains
+            $cleanPhone,                    // Direct match
+            $cleanPhone,                    // Match with zero added to database value
+            $cleanPhone                     // Direct match with zero
         ];
         
         $stmt->execute($searchPatterns);
@@ -210,6 +244,166 @@ function getClaimsByPhone($pdo, $phone) {
             'phone_searched' => $phone,
             'total_claims' => 0,
             'claims' => []
+        ];
+    }
+}
+
+/**
+ * Create/update a claim with additional details (for current draw week)
+ * @param PDO $pdo Database connection
+ * @param array $claimData Array containing claim details
+ * @return array Result of the claim operation
+ */
+function createClaim($pdo, $claimData) {
+    try {
+        // Get current draw week
+        $currentDraw = getCurrentDrawWeek($pdo);
+        
+        if (!$currentDraw) {
+            return [
+                'status' => 'error',
+                'message' => 'No current draw week found',
+                'claimed' => false
+            ];
+        }
+        
+        return createClaimForDrawWeek($pdo, $claimData, $currentDraw['id']);
+        
+    } catch (PDOException $e) {
+        error_log("Error creating claim: " . $e->getMessage());
+        return [
+            'status' => 'error',
+            'message' => 'Database error: ' . $e->getMessage(),
+            'claimed' => false
+        ];
+    }
+}
+
+/**
+ * Create/update a claim for a specific draw week
+ * @param PDO $pdo Database connection
+ * @param array $claimData Array containing claim details
+ * @param int $drawWeekId Specific draw week ID
+ * @return array Result of the claim operation
+ */
+function createClaimForDrawWeek($pdo, $claimData, $drawWeekId) {
+    try {
+        // Normalize phone number for matching
+        $phone = $claimData['phone'];
+        $cleanPhone = normalizePhoneNumber($phone);
+        
+        // First check if winner exists for specified draw week with flexible matching
+        $stmt = $pdo->prepare("
+            SELECT id, name, phone, is_claimed 
+            FROM winners 
+            WHERE draw_week = ? AND (
+                REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '(', '') = ? OR
+                REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '(', '') LIKE ? OR
+                phone LIKE ? OR
+                phone = ? OR
+                -- Also check with leading zero (database might have it without zero)
+                REPLACE(REPLACE(REPLACE(CONCAT('0', phone), ' ', ''), '-', ''), '(', '') = ? OR
+                CONCAT('0', phone) = ?
+            )
+        ");
+        
+        $searchPatterns = [
+            $cleanPhone,                    // Exact match without zero
+            $cleanPhone . '%',              // Starts with
+            '%' . $cleanPhone . '%',        // Contains
+            $cleanPhone,                    // Direct match
+            $cleanPhone,                    // Match with zero added to database value
+            $cleanPhone                     // Direct match with zero
+        ];
+        
+        $stmt->execute([$drawWeekId, ...$searchPatterns]);
+        $winner = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$winner) {
+            return [
+                'status' => 'error',
+                'message' => 'Winner not found for draw week ID ' . $drawWeekId . ' with phone number: ' . $phone,
+                'claimed' => false,
+                'draw_week_id' => $drawWeekId
+            ];
+        }
+        
+        // Check if already claimed
+        if ($winner['is_claimed'] == 1) {
+            return [
+                'status' => 'error',
+                'message' => 'Prize already claimed for this winner',
+                'claimed' => false,
+                'winner_id' => $winner['id'],
+                'draw_week_id' => $drawWeekId
+            ];
+        }
+        
+        // Update the winner record with claim details
+        $stmt = $pdo->prepare("
+            UPDATE winners SET 
+                email = ?,
+                password = ?,
+                photo = ?,
+                ghanacard_number = ?,
+                ghanacard_photo = ?,
+                is_claimed = 1,
+                updatedAt = NOW()
+            WHERE id = ?
+        ");
+        
+        $result = $stmt->execute([
+            $claimData['email'] ?? null,
+            $claimData['password'] ?? null,
+            $claimData['photo'] ?? null,
+            $claimData['ghanacard_number'] ?? null,
+            $claimData['ghanacard_photo'] ?? null,
+            $winner['id']
+        ]);
+        
+        if ($result) {
+            // Get draw details for response
+            $drawStmt = $pdo->prepare("SELECT * FROM draw_dates WHERE id = ?");
+            $drawStmt->execute([$drawWeekId]);
+            $drawDetails = $drawStmt->fetch(PDO::FETCH_ASSOC);
+            
+            // Send success SMS notification
+            $drawDate = new DateTime($drawDetails['date']);
+            $formattedDate = $drawDate->format('F j, Y \a\t g:i A');
+            
+            $successMessage = "🎉 CONGRATULATIONS! Your prize claim has been successfully processed for " . 
+                             $formattedDate . ". Your winner ID is " . $winner['id'] . 
+                             ". We will contact you soon for prize collection details. Thank you!";
+            
+            $smsResult = sendSMS($winner['phone'], $successMessage);
+            
+            return [
+                'status' => 'success',
+                'message' => 'Claim created successfully',
+                'claimed' => true,
+                'winner_id' => $winner['id'],
+                'draw_week_id' => $drawWeekId,
+                'draw_details' => $drawDetails,
+                'sms_sent' => $smsResult['status'] === 'success',
+                'sms_result' => $smsResult
+            ];
+        } else {
+            return [
+                'status' => 'error',
+                'message' => 'Failed to update claim details',
+                'claimed' => false,
+                'winner_id' => $winner['id'],
+                'draw_week_id' => $drawWeekId
+            ];
+        }
+        
+    } catch (PDOException $e) {
+        error_log("Error creating claim for draw week: " . $e->getMessage());
+        return [
+            'status' => 'error',
+            'message' => 'Database error: ' . $e->getMessage(),
+            'claimed' => false,
+            'draw_week_id' => $drawWeekId
         ];
     }
 }
