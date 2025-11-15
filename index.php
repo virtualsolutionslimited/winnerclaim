@@ -813,10 +813,6 @@ if ($currentDraw) {
               <span id="detailPhone">-</span>
             </div>
             <div class="detail-item">
-              <label>Draw Week:</label>
-              <span id="detailDrawWeek">-</span>
-            </div>
-            <div class="detail-item">
               <label>Draw Date:</label>
               <span id="detailDrawDate">-</span>
             </div>
@@ -831,9 +827,6 @@ if ($currentDraw) {
           </div>
           
           <div class="detail-actions">
-            <button class="btn btn-primary" onclick="downloadClaimContract()">
-              Download Contract
-            </button>
             <button class="btn btn-secondary" onclick="this.closest('.modal').classList.remove('show')">
               Close
             </button>

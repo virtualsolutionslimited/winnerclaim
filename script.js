@@ -1272,8 +1272,6 @@ function viewClaimDetail(claim) {
   document.getElementById("detailClaimId").textContent = claim.id || "N/A";
   document.getElementById("detailWinnerName").textContent = claim.name || "N/A";
   document.getElementById("detailPhone").textContent = claim.phone || "N/A";
-  document.getElementById("detailDrawWeek").textContent =
-    claim.draw_week || "N/A";
 
   // Format dates
   const drawDate = claim.draw_date
@@ -1295,14 +1293,17 @@ function viewClaimDetail(claim) {
   document.getElementById("detailDrawDate").textContent = drawDate;
   document.getElementById("detailDateClaimed").textContent = dateClaimed;
 
-  // Status with badge styling
+  // Status with green text for "Claimed"
   const statusElement = document.getElementById("detailStatus");
   const status = claim.is_claimed ? "Claimed" : "Pending";
   statusElement.textContent = status;
 
-  // Apply status badge classes
-  statusElement.className =
-    "status-badge " + (claim.is_claimed ? "status-claimed" : "status-pending");
+  // Apply green text color for claimed status
+  if (claim.is_claimed) {
+    statusElement.style.color = "#4CAF50";
+  } else {
+    statusElement.style.color = ""; // Default color for pending
+  }
 
   // Show the modal
   console.log("Showing claimDetailModal");
