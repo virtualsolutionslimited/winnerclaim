@@ -221,6 +221,24 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <div class="password-field">
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                placeholder="Re-enter your password"
+                minlength="8"
+                required
+              />
+              <span class="password-toggle" id="toggleConfirmPassword">👁️</span>
+            </div>
+            <div class="password-error" id="passwordError" style="color: #e53935; font-size: 0.875rem; margin-top: 5px; display: none;">
+              Passwords do not match
+            </div>
+          </div>
+
           <div class="form-checkbox">
             <input
               type="checkbox"
@@ -231,6 +249,30 @@
             <label for="accountHolder"
               >I am the MoMo account holder for this number</label
             >
+          </div>
+
+          <div class="form-checkbox">
+            <input
+              type="checkbox"
+              id="termsAgreement"
+              name="termsAgreement"
+              required
+            />
+            <label for="termsAgreement">
+              I have read and agree to the <a href="#" onclick="window.open('#', '_blank'); return false;">Terms & Conditions</a>.
+            </label>
+          </div>
+
+          <div class="form-checkbox">
+            <input
+              type="checkbox"
+              id="privacyAgreement"
+              name="privacyAgreement"
+              required
+            />
+            <label for="privacyAgreement">
+              I have read and agree to the <a href="#" onclick="window.open('#', '_blank'); return false;">Privacy and Data Statement</a>.
+            </label>
           </div>
 
           <div class="form-actions">

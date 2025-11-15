@@ -235,55 +235,182 @@ function handleResendOtp() {
   handleSendOtp();
   resendOtp.style.display = "none";
 }
-
 // Initialize Account Form
 function initAccountForm() {
-  if (!accountForm) return;
+  if (!accountForm) {
+    console.log("Account form not found!");
+    return;
+  }
+
+  // Get form elements
+  const emailField = document.getElementById("email");
+  const passwordField = document.getElementById("password");
+  const confirmPasswordField = document.getElementById("confirmPassword");
+  const accountHolderCheckbox = document.getElementById("accountHolder");
+  const termsCheckbox = document.getElementById("termsAgreement");
+  const privacyCheckbox = document.getElementById("privacyAgreement");
+  const submitBtn = accountForm.querySelector(".submit-btn");
+
+  console.log("Form elements found:", {
+    emailField: !!emailField,
+    passwordField: !!passwordField,
+    confirmPasswordField: !!confirmPasswordField,
+    accountHolderCheckbox: !!accountHolderCheckbox,
+    termsCheckbox: !!termsCheckbox,
+    privacyCheckbox: !!privacyCheckbox,
+    submitBtn: !!submitBtn,
+  });
+
+  // Function to check if all conditions are met
+  function updateSubmitButton() {
+    // Always keep button enabled with brand colors
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.style.backgroundColor = "var(--primary-color)"; // Brand yellow
+      submitBtn.style.color = "#170742"; // Deep blue text
+
+      // Add hover effect
+      submitBtn.addEventListener("mouseenter", () => {
+        submitBtn.style.backgroundColor = "var(--primary-color)"; // Brand yellow
+        submitBtn.style.color = "#170742"; // Deep blue text
+      });
+
+      submitBtn.addEventListener("mouseleave", () => {
+        submitBtn.style.backgroundColor = "var(--primary-color)"; // Brand yellow
+        submitBtn.style.color = "#170742"; // Deep blue text
+      });
+    }
+  }
+
+  // Password matching validation
+  function validatePasswordMatch() {
+    const password = passwordField.value;
+    const confirmPassword = confirmPasswordField.value;
+    const passwordError = document.getElementById("passwordError");
+
+    if (confirmPassword && password !== confirmPassword) {
+      passwordError.style.display = "block";
+      return false;
+    } else {
+      passwordError.style.display = "none";
+      return true;
+    }
+  }
+
+  // Add event listeners for all form fields
+  if (emailField) emailField.addEventListener("input", updateSubmitButton);
+  if (passwordField)
+    passwordField.addEventListener("input", () => {
+      validatePasswordMatch();
+      updateSubmitButton();
+    });
+  if (confirmPasswordField)
+    confirmPasswordField.addEventListener("input", () => {
+      validatePasswordMatch();
+      updateSubmitButton();
+    });
+  if (accountHolderCheckbox)
+    accountHolderCheckbox.addEventListener("change", updateSubmitButton);
+  if (termsCheckbox)
+    termsCheckbox.addEventListener("change", updateSubmitButton);
+  if (privacyCheckbox)
+    privacyCheckbox.addEventListener("change", updateSubmitButton);
+
+  // Add toggle functionality for confirm password
+  const toggleConfirmPassword = document.getElementById(
+    "toggleConfirmPassword"
+  );
+  if (toggleConfirmPassword && confirmPasswordField) {
+    toggleConfirmPassword.addEventListener("click", () => {
+      console.log("Toggle clicked, current type:", confirmPasswordField.type);
+      if (confirmPasswordField.type === "password") {
+        confirmPasswordField.type = "text";
+        toggleConfirmPassword.textContent = "👁️";
+        console.log("Changed to text");
+      } else {
+        confirmPasswordField.type = "password";
+        toggleConfirmPassword.textContent = "👁️";
+        console.log("Changed to password");
+      }
+    });
+  } else {
+    console.log("Toggle or field not found:", {
+      toggleConfirmPassword: !!toggleConfirmPassword,
+      confirmPasswordField: !!confirmPasswordField,
+    });
+  }
+
+  // Initialize button state
+  updateSubmitButton();
 
   accountForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const email = document.getElementById("accountEmail").value.trim();
-    const password = document.getElementById("accountPassword").value;
-    const confirmPassword = document.getElementById(
-      "accountConfirmPassword"
-    ).value;
-    const isAccountHolder = document.getElementById("accountHolder").checked;
+    const email = emailField.value.trim();
+    const password = passwordField.value;
+    const confirmPassword = confirmPasswordField.value;
+    const isAccountHolder = accountHolderCheckbox.checked;
+    const termsAgreement = termsCheckbox.checked;
+    const privacyAgreement = privacyCheckbox.checked;
 
     // Validate form
-    if (!email) {
-      alert("Please enter your email address");
+    if (email && !email.includes("@")) {
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.textContent = "Please enter a valid email address";
+      showModal("errorModal");
       return;
     }
 
     if (password.length < 8) {
-      alert("Password must be at least 8 characters long");
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.textContent = "Password must be at least 8 characters long";
+      showModal("errorModal");
       return;
     }
 
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
+    if (!validatePasswordMatch()) {
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.textContent = "Passwords do not match";
+      showModal("errorModal");
       return;
     }
 
     if (!isAccountHolder) {
-      alert("You must confirm that you are the MoMo account holder");
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.textContent =
+        "You must confirm you are the MoMo account holder";
+      showModal("errorModal");
       return;
     }
 
-    // Update user data
-    currentUser.email = email;
-    updateWinnerData(currentUser.phone, {
-      email: email,
-      verified: true,
+    if (!termsAgreement) {
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.textContent = "You must agree to the Terms & Conditions";
+      showModal("errorModal");
+      return;
+    }
+
+    if (!privacyAgreement) {
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.textContent =
+        "You must agree to the Privacy and Data Statement";
+      showModal("errorModal");
+      return;
+    }
+
+    // In a real app, you would create the account here
+    console.log("Creating account:", {
+      email,
+      password,
+      isAccountHolder,
+      termsAgreement,
+      privacyAgreement,
     });
 
-    // Show contract acceptance modal
     hideModal();
     showModal("contractModal");
   });
 }
-
 // Initialize Contract Form
 function initContractForm() {
   const contractForm = document.getElementById("contractForm");

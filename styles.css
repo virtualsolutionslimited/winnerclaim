@@ -523,6 +523,49 @@ p {
   font-weight: 400;
 }
 
+/* Password field with toggle icon */
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 45px; /* Space for the eye icon */
+}
+
+.password-toggle {
+  position: absolute;
+  right: 15px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  user-select: none;
+  z-index: 10;
+  background: transparent;
+  border: none;
+  padding: 5px;
+  border-radius: 4px;
+  transition: var(--transition);
+}
+
+.password-toggle:hover {
+  color: var(--primary-color);
+  background: rgba(255, 87, 34, 0.1);
+}
+
+/* Links in forms */
+.form-checkbox a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.form-checkbox a:hover {
+  text-decoration: underline;
+}
+
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
@@ -621,6 +664,19 @@ p {
   background-color: #666;
   transform: none;
   box-shadow: none;
+}
+
+/* Account form submit button specific styling */
+#createAccountForm .submit-btn {
+  background-color: var(--primary-color) !important;
+  color: #170742 !important;
+}
+
+#createAccountForm .submit-btn:hover {
+  background-color: var(--primary-color) !important;
+  color: #170742 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
 }
 
 .ok-btn {
