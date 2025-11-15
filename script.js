@@ -1228,17 +1228,13 @@ function showClaimsList(winner) {
         ? new Date(claim.draw_date).toLocaleDateString()
         : "N/A";
 
-      // Create prize name based on the data available
-      const prizeName = `World Cup Experience - Draw ${
-        claim.draw_week || "N/A"
-      }`;
-
       row.innerHTML = `
-        <td>${prizeName}</td>
         <td>${drawDate}</td>
         <td>
-          <button class="download-btn" onclick="downloadContract('${claim.id}', '${winner.name}', '${prizeName}')">
-            Download
+          <button class="download-btn" onclick="viewClaimDetail(${JSON.stringify(
+            claim
+          ).replace(/"/g, "&quot;")})">
+            View
           </button>
         </td>
       `;
@@ -1248,7 +1244,7 @@ function showClaimsList(winner) {
     // Show no claims message
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td colspan="3" style="text-align: center; padding: 20px;">
+      <td colspan="2" style="text-align: center; padding: 20px;">
         No claims found for this user
       </td>
     `;
@@ -1256,7 +1252,95 @@ function showClaimsList(winner) {
   }
 }
 
-// Download Contract
+// View Claim Detail
+let currentClaimDetail = null;
+
+function viewClaimDetail(claim) {
+  currentClaimDetail = claim;
+
+  // Populate the detail modal
+  document.getElementById("detailClaimId").textContent = claim.id || "N/A";
+  document.getElementById("detailWinnerName").textContent = claim.name || "N/A";
+  document.getElementById("detailPhone").textContent = claim.phone || "N/A";
+  document.getElementById("detailDrawWeek").textContent =
+    claim.draw_week || "N/A";
+
+  // Format dates
+  const drawDate = claim.draw_date
+    ? new Date(claim.draw_date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "N/A";
+
+  const dateClaimed = claim.updatedAt
+    ? new Date(claim.updatedAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "N/A";
+
+  document.getElementById("detailDrawDate").textContent = drawDate;
+  document.getElementById("detailDateClaimed").textContent = dateClaimed;
+
+  // Status
+  const status = claim.is_claimed ? "Claimed" : "Pending";
+  document.getElementById("detailStatus").textContent = status;
+
+  // Show the modal
+  showModal("claimDetailModal");
+}
+
+// Download Claim Contract
+function downloadClaimContract() {
+  if (!currentClaimDetail) return;
+
+  // Create a simple contract text
+  const contractContent = `
+WINNER ACCEPTANCE CONTRACT
+
+Claim ID: ${currentClaimDetail.id}
+Winner Name: ${currentClaimDetail.name}
+Phone: ${currentClaimDetail.phone}
+Draw Week: ${currentClaimDetail.draw_week}
+Draw Date: ${
+    currentClaimDetail.draw_date
+      ? new Date(currentClaimDetail.draw_date).toLocaleDateString()
+      : "N/A"
+  }
+Date Claimed: ${
+    currentClaimDetail.updatedAt
+      ? new Date(currentClaimDetail.updatedAt).toLocaleDateString()
+      : "N/A"
+  }
+
+This contract confirms that ${
+    currentClaimDetail.name
+  } has successfully claimed the World Cup Experience prize for Draw Week ${
+    currentClaimDetail.draw_week
+  }.
+The terms and conditions have been accepted and verified.
+
+Generated on: ${new Date().toLocaleString()}
+  `.trim();
+
+  // Create a blob and download
+  const blob = new Blob([contractContent], { type: "text/plain" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Contract_${
+    currentClaimDetail.id
+  }_${currentClaimDetail.name.replace(/\s+/g, "_")}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+}
+
+// Download Contract (legacy function for backward compatibility)
 function downloadContract(claimId, winnerName, prizeName) {
   // Create a simple contract text
   const contractContent = `

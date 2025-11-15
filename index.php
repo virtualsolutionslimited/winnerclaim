@@ -777,15 +777,67 @@ if ($currentDraw) {
           <table class="claims-table">
             <thead>
               <tr>
-                <th>Name</th>
                 <th>Date</th>
-                <th>Download Contract</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="claimsTableBody">
               <!-- Claims will be populated here -->
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Claim Detail Modal -->
+    <div class="modal" id="claimDetailModal">
+      <div class="modal-content" style="max-width: 600px;">
+        <span class="close-btn">&times;</span>
+        <div class="modal-header">
+          <h2>Claim Details</h2>
+          <p class="text-muted">View your claim information</p>
+        </div>
+        
+        <div class="claim-detail-content">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Claim ID:</label>
+              <span id="detailClaimId">-</span>
+            </div>
+            <div class="detail-item">
+              <label>Winner Name:</label>
+              <span id="detailWinnerName">-</span>
+            </div>
+            <div class="detail-item">
+              <label>Phone Number:</label>
+              <span id="detailPhone">-</span>
+            </div>
+            <div class="detail-item">
+              <label>Draw Week:</label>
+              <span id="detailDrawWeek">-</span>
+            </div>
+            <div class="detail-item">
+              <label>Draw Date:</label>
+              <span id="detailDrawDate">-</span>
+            </div>
+            <div class="detail-item">
+              <label>Date Claimed:</label>
+              <span id="detailDateClaimed">-</span>
+            </div>
+            <div class="detail-item">
+              <label>Status:</label>
+              <span id="detailStatus">-</span>
+            </div>
+          </div>
+          
+          <div class="detail-actions">
+            <button class="btn btn-primary" onclick="downloadClaimContract()">
+              Download Contract
+            </button>
+            <button class="btn btn-secondary" onclick="this.closest('.modal').classList.remove('show')">
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>
