@@ -407,4 +407,81 @@ function createClaimForDrawWeek($pdo, $claimData, $drawWeekId) {
         ];
     }
 }
+
+/**
+ * Get all unclaimed winners for the current draw week
+ * @param PDO $pdo Database connection
+ * @return array Array of unclaimed winners with their information
+ */
+function getUnclaimedWinnersForCurrentDraw($pdo) {
+    try {
+        // Get current draw week
+        $currentDraw = getCurrentDrawWeek($pdo);
+        
+        if (!$currentDraw) {
+            return [
+                'status' => 'error',
+                'message' => 'No current draw week found',
+                'unclaimed_winners' => []
+            ];
+        }
+        
+        // Get all winners for current draw week who haven't claimed yet
+        $stmt = $pdo->prepare("
+            SELECT w.*, d.date as draw_date
+            FROM winners w 
+            LEFT JOIN draw_dates d ON w.draw_week = d.id 
+            WHERE w.draw_week = ? AND w.is_claimed = 0
+            ORDER BY w.createdAt ASC
+        ");
+        
+        $stmt->execute([$currentDraw['id']]);
+        $winners = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Format the results
+        $unclaimedWinners = [];
+        foreach ($winners as $winner) {
+            $unclaimedWinners[] = [
+                'id' => $winner['id'],
+                'name' => $winner['name'],
+                'phone' => $winner['phone'],
+                'draw_week' => $winner['draw_week'],
+                'draw_date' => $winner['draw_date'],
+                'created_at' => $winner['createdAt'],
+                'days_since_win' => calculateDaysSince($winner['createdAt'])
+            ];
+        }
+        
+        return [
+            'status' => 'success',
+            'message' => 'Found ' . count($unclaimedWinners) . ' unclaimed winners',
+            'current_draw' => $currentDraw,
+            'unclaimed_winners' => $unclaimedWinners,
+            'total_unclaimed' => count($unclaimedWinners)
+        ];
+        
+    } catch (PDOException $e) {
+        return [
+            'status' => 'error',
+            'message' => 'Database error: ' . $e->getMessage(),
+            'unclaimed_winners' => []
+        ];
+    }
+}
+
+/**
+ * Calculate days since a given date
+ * @param string $date The date to calculate from
+ * @return int Number of days since the date
+ */
+function calculateDaysSince($date) {
+    try {
+        $created = new DateTime($date);
+        $now = new DateTime();
+        $diff = $now->diff($created);
+        return $diff->days;
+    } catch (Exception $e) {
+        return 0;
+    }
+}
 ?>
