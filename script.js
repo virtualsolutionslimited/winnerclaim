@@ -45,14 +45,22 @@ function startCountdown() {
   const now = new Date();
   let targetDate;
 
+  console.log("Current time:", now);
+  console.log("Window.claimWindowDate:", window.claimWindowDate);
+
   if (window.claimWindowDate) {
     // Use the claim window date from PHP
     targetDate = new Date(window.claimWindowDate);
+    console.log("Using PHP date:", targetDate);
   } else {
     // Fallback: 5 days from now
     targetDate = new Date(now);
     targetDate.setDate(now.getDate() + 5);
+    console.log("Using fallback date:", targetDate);
   }
+
+  console.log("Time remaining (ms):", targetDate - now);
+  console.log("Is expired:", targetDate < now);
 
   // Set the initial countdown values
   updateCountdown(targetDate);
@@ -66,19 +74,49 @@ function updateCountdown(targetDate) {
   const now = new Date();
   let timeRemaining = targetDate - now;
 
-  // If countdown is over, clear the interval
+  // If countdown is over, show "X days ago" in red
   if (timeRemaining < 0) {
     clearInterval(countdownInterval);
-    if (countdownDisplay) {
-      countdownDisplay.textContent = "Time's up!";
+
+    // Calculate how long ago it was
+    const timeAgo = Math.abs(timeRemaining);
+    const totalSeconds = Math.floor(timeAgo / 1000);
+    const days = Math.floor(totalSeconds / (3600 * 24));
+    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    // Create "ago" text
+    let agoText = "";
+    if (days > 0) {
+      agoText = days === 1 ? "Due 1 day ago" : `Due ${days} days ago`;
+    } else if (hours > 0) {
+      agoText = hours === 1 ? "Due 1 hour ago" : `Due ${hours} hours ago`;
+    } else if (minutes > 0) {
+      agoText =
+        minutes === 1 ? "Due 1 minute ago" : `Due ${minutes} minutes ago`;
+    } else {
+      agoText = "Due just now";
     }
+
+    // Update the banner display with red text
+    if (countdownDisplay) {
+      countdownDisplay.textContent = agoText;
+      countdownDisplay.style.color = "#ff4444"; // Red color
+    }
+
+    // Hide claim button when claim window is expired
+    if (claimBtn) {
+      claimBtn.style.display = "none";
+    }
+
+    // Update the numeric countdown display to show "00"
     document
       .querySelectorAll(".countdown-value")
       .forEach((el) => (el.textContent = "00"));
     return;
   }
 
-  // Calculate time units
+  // Calculate time units for active countdown
   const totalSeconds = Math.floor(timeRemaining / 1000);
   const days = Math.floor(totalSeconds / (3600 * 24));
   const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
@@ -101,6 +139,12 @@ function updateCountdown(targetDate) {
       .padStart(2, "0")}h ${minutes.toString().padStart(2, "0")}m ${seconds
       .toString()
       .padStart(2, "0")}s`;
+    countdownDisplay.style.color = ""; // Reset to default color
+  }
+
+  // Show claim button when claim window is active
+  if (claimBtn) {
+    claimBtn.style.display = "";
   }
 }
 

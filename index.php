@@ -14,8 +14,15 @@ if ($currentDraw) {
     $claimWindowDate->add(new DateInterval('P5D')); // Add 5 days
     
     $claimWindowText .= '5 days from ' . $drawDate->format('F j, Y');
+    
+    // Debug output (comment this out in production)
+    error_log("DEBUG: Draw Date: " . $drawDate->format('Y-m-d H:i:s'));
+    error_log("DEBUG: Claim Window: " . $claimWindowDate->format('Y-m-d H:i:s'));
+    error_log("DEBUG: Current Time: " . date('Y-m-d H:i:s'));
+    error_log("DEBUG: Is Expired: " . ($claimWindowDate < new DateTime() ? 'YES' : 'NO'));
 } else {
     $claimWindowText .= 'No current draw available';
+    error_log("DEBUG: No current draw found");
 }
 ?>
 <!DOCTYPE html>
@@ -604,7 +611,13 @@ if ($currentDraw) {
 
     <script>
         // Pass claim window date from PHP to JavaScript
-        window.claimWindowDate = <?php echo $claimWindowDate ? $claimWindowDate->format('Y-m-d H:i:s') : 'null'; ?>;
+        <?php if ($claimWindowDate): ?>
+        window.claimWindowDate = '<?php echo $claimWindowDate->format('Y-m-d H:i:s'); ?>';
+        console.log('PHP claim window date:', '<?php echo $claimWindowDate->format('Y-m-d H:i:s'); ?>');
+        <?php else: ?>
+        window.claimWindowDate = null;
+        console.log('PHP claim window date: null');
+        <?php endif; ?>
     </script>
     <script type="module" src="script.js"></script>
   </body>
