@@ -859,6 +859,37 @@ function startOtpCountdown() {
   }, 1000);
 }
 
+// Reset My Claims Modal to phone verification state
+function resetMyClaimsModal() {
+  // Show phone section and hide OTP section
+  myClaimsPhoneSection.style.display = "block";
+  myClaimsOtpSection.style.display = "none";
+
+  // Clear phone input
+  myClaimsPhoneInput.value = "";
+
+  // Clear OTP inputs
+  const myClaimsOtpInputs = myClaimsOtpSection.querySelectorAll(".otp-digit");
+  myClaimsOtpInputs.forEach((input) => {
+    input.value = "";
+  });
+
+  // Reset verify button
+  myClaimsVerifyOtpBtn.textContent = "Verify Code";
+  myClaimsVerifyOtpBtn.style.backgroundColor = "";
+  myClaimsVerifyOtpBtn.style.color = "";
+  myClaimsVerifyOtpBtn.style.borderColor = "";
+  myClaimsVerifyOtpBtn.disabled = true;
+
+  // Hide resend button
+  myClaimsResendOtp.style.display = "none";
+
+  // Clear countdown
+  if (myClaimsOtpCountdown) {
+    clearInterval(myClaimsOtpCountdown);
+  }
+}
+
 // Initialize My Claims Phone Form
 function initMyClaimsPhoneForm() {
   myClaimsPhoneForm.addEventListener("submit", async (e) => {
@@ -1424,6 +1455,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // My Claims button handler
   myClaimsBtn.addEventListener("click", () => {
+    // Reset My Claims modal to phone verification state
+    resetMyClaimsModal();
     showModal("myClaimsPhoneModal");
   });
 
@@ -1581,6 +1614,14 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".ok-btn").forEach((btn) => {
     btn.addEventListener("click", hideModal);
   });
+
+  // Close button for claim detail modal
+  const closeClaimDetailBtn = document.getElementById("closeClaimDetailBtn");
+  if (closeClaimDetailBtn) {
+    closeClaimDetailBtn.addEventListener("click", () => {
+      hideModal("claimDetailModal");
+    });
+  }
 
   // Helper function for OTP countdown
   function startOtpCountdown() {

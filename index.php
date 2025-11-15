@@ -827,7 +827,7 @@ if ($currentDraw) {
           </div>
           
           <div class="detail-actions">
-            <button class="btn btn-secondary" onclick="this.closest('.modal').classList.remove('show')">
+            <button class="btn btn-secondary" id="closeClaimDetailBtn">
               Close
             </button>
           </div>
