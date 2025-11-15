@@ -83,6 +83,18 @@
             background: #6c757d;
         }
         
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e0a800;
+            border-color: #d39e00;
+            color: #212529;
+        }
+        
         .result {
             margin-top: 20px;
             padding: 15px;
@@ -91,9 +103,9 @@
         }
         
         .result.success {
-            background: #d4edda;
+            background-color: #28a745;
             border-color: #28a745;
-            color: #155724;
+            color: white;
         }
         
         .result.error {
@@ -167,6 +179,7 @@
                 </div>
                 
                 <button type="submit" name="send_otp" class="btn">📤 Send OTP Code</button>
+                <button type="submit" name="resend_otp" class="btn btn-warning">🔄 Resend OTP Code</button>
                 <button type="submit" name="generate_test" class="btn btn-secondary">🧪 Generate Test Code Only</button>
             </form>
             
@@ -179,6 +192,45 @@
                     $purpose = $_POST['purpose'];
                     
                     $result = sendOTP($phone, $purpose);
+                    
+                    echo '<div class="result ' . $result['status'] . '">';
+                    echo '<strong>' . $result['message'] . '</strong>';
+                    
+                    if ($result['status'] === 'success') {
+                        echo '<div class="code-display">' . $result['code'] . '</div>';
+                        echo '<small><strong>Test Note:</strong> Code is shown above for testing. In production, remove the code from the response.</small>';
+                        
+                        if (isset($result['winner_updated'])) {
+                            echo '<p><strong>Winner Record Updated:</strong> ' . ($result['winner_updated'] ? '✅ Yes' : '❌ No') . '</p>';
+                        }
+                        
+                        if (isset($result['sms_response'])) {
+                            echo '<div class="api-info">';
+                            echo '<strong>API Response:</strong><br>';
+                            echo '<pre>' . htmlspecialchars(json_encode($result['sms_response'], JSON_PRETTY_PRINT)) . '</pre>';
+                            echo '</div>';
+                        }
+                    } else {
+                        if (isset($result['error'])) {
+                            echo '<br><small>Error: ' . htmlspecialchars($result['error']) . '</small>';
+                        }
+                        
+                        if (isset($result['sms_response'])) {
+                            echo '<div class="api-info">';
+                            echo '<strong>Full API Response:</strong><br>';
+                            echo '<pre>' . htmlspecialchars(json_encode($result['sms_response'], JSON_PRETTY_PRINT)) . '</pre>';
+                            echo '</div>';
+                        }
+                    }
+                    
+                    echo '</div>';
+                }
+                
+                if (isset($_POST['resend_otp'])) {
+                    $phone = trim($_POST['phone']);
+                    $purpose = $_POST['purpose'];
+                    
+                    $result = resendOTP($phone, $purpose);
                     
                     echo '<div class="result ' . $result['status'] . '">';
                     echo '<strong>' . $result['message'] . '</strong>';

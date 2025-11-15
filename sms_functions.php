@@ -311,4 +311,69 @@ function verifyOTPCode($phoneNumber, $code) {
     }
 }
 
+/**
+ * Resend OTP code to phone number
+ * @param string $phoneNumber The phone number to resend OTP to
+ * @param string $purpose The purpose of the OTP (verification, claim, etc.)
+ * @return array Result of the resend operation
+ */
+function resendOTP($phoneNumber, $purpose = 'verification') {
+    try {
+        // Generate new OTP code
+        $code = generateSixDigitCode();
+        
+        // Clean phone number for SMS
+        $cleanPhone = cleanPhoneNumber($phoneNumber);
+        
+        // Prepare message
+        $message = "Your Raffle verification code is: $code";
+        if ($purpose === 'claim') {
+            $message = "Your Raffle prize claim code is: $code";
+        }
+        
+        // Send SMS
+        $smsResult = sendSMS($cleanPhone, $message);
+        
+        if ($smsResult['status'] === 'success') {
+            // Update OTP in winners table
+            $updated = updateWinnerOTP($phoneNumber, $code);
+            
+            if ($updated) {
+                return [
+                    'status' => 'success',
+                    'message' => 'OTP code resent successfully',
+                    'code' => $code,
+                    'sms_response' => $smsResult['response'],
+                    'winner_updated' => true
+                ];
+            } else {
+                return [
+                    'status' => 'error',
+                    'message' => 'SMS sent but failed to update winner record',
+                    'code' => $code,
+                    'sms_response' => $smsResult['response'],
+                    'winner_updated' => false
+                ];
+            }
+        } else {
+            return [
+                'status' => 'error',
+                'message' => 'Failed to resend OTP code',
+                'error' => $smsResult['error'],
+                'sms_response' => $smsResult['response'],
+                'winner_updated' => false
+            ];
+        }
+        
+    } catch (Exception $e) {
+        error_log("Error resending OTP: " . $e->getMessage());
+        return [
+            'status' => 'error',
+            'message' => 'Failed to resend OTP code',
+            'error' => $e->getMessage(),
+            'winner_updated' => false
+        ];
+    }
+}
+
 ?>
