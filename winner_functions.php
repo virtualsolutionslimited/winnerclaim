@@ -155,4 +155,62 @@ function searchWinnerByPhone($pdo, $phone) {
         return [];
     }
 }
+
+/**
+ * Get all claims by phone number (claimed winners only)
+ * @param PDO $pdo Database connection
+ * @param string $phone The phone number to search
+ * @return array Array of claimed winners
+ */
+function getClaimsByPhone($pdo, $phone) {
+    try {
+        // Clean the phone number for matching
+        $cleanPhone = preg_replace('/[\s\-\(\)]/', '', $phone);
+        
+        $stmt = $pdo->prepare("
+            SELECT w.*, d.date as draw_date,
+                   CASE 
+                       WHEN d.date >= NOW() THEN 'upcoming'
+                       WHEN d.date >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 'recent'
+                       ELSE 'past'
+                   END as week_status
+            FROM winners w 
+            LEFT JOIN draw_dates d ON w.draw_week = d.id 
+            WHERE w.is_claimed = 1 AND (
+                REPLACE(REPLACE(REPLACE(w.phone, ' ', ''), '-', ''), '(', '') = ? OR
+                REPLACE(REPLACE(REPLACE(w.phone, ' ', ''), '-', ''), '(', '') LIKE ? OR
+                w.phone LIKE ? OR
+                w.phone = ?
+            )
+            ORDER BY d.date DESC, w.updatedAt DESC
+        ");
+        
+        $searchPatterns = [
+            $cleanPhone,
+            $cleanPhone . '%',
+            '%' . $phone . '%',
+            $phone
+        ];
+        
+        $stmt->execute($searchPatterns);
+        $claims = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return [
+            'status' => 'success',
+            'phone_searched' => $phone,
+            'total_claims' => count($claims),
+            'claims' => $claims
+        ];
+        
+    } catch (PDOException $e) {
+        error_log("Error getting claims by phone: " . $e->getMessage());
+        return [
+            'status' => 'error',
+            'message' => 'Database error: ' . $e->getMessage(),
+            'phone_searched' => $phone,
+            'total_claims' => 0,
+            'claims' => []
+        ];
+    }
+}
 ?>
