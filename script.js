@@ -880,6 +880,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("form").forEach((form) => form.reset());
   });
 
+  // OK button handler for error modal
+  document.querySelectorAll(".ok-btn").forEach((btn) => {
+    btn.addEventListener("click", hideModal);
+  });
+
   // Helper function for OTP countdown
   function startOtpCountdown() {
     otpTimeLeft = 120; // Reset to 2 minutes
