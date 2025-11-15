@@ -162,7 +162,9 @@ function handleSendOtp() {
   const phone = phoneInput.value.trim();
 
   if (!phone) {
-    alert("Please enter your MoMo account number");
+    const errorMessage = document.getElementById("error-message");
+    errorMessage.textContent = "Please enter your MoMo account number";
+    showModal("errorModal");
     return;
   }
 
@@ -170,9 +172,10 @@ function handleSendOtp() {
   const winner = findWinnerByPhone(phone);
 
   if (!winner) {
-    alert(
-      "This phone number is not registered as a winner. Please check and try again."
-    );
+    const errorMessage = document.getElementById("error-message");
+    errorMessage.textContent =
+      "This phone number is not registered as a winner. Please check and try again.";
+    showModal("errorModal");
     return;
   }
 
@@ -748,29 +751,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let otpCountdown;
   let otpTimeLeft = 120; // 2 minutes in seconds
-
-  // Send OTP
-  sendOtpBtn.addEventListener("click", () => {
-    const phone = document.getElementById("phone").value;
-    const winner = findWinnerByPhone(phone);
-
-    if (winner) {
-      // Show OTP section
-      otpSection.style.display = "block";
-      sendOtpBtn.disabled = true;
-
-      // Start OTP countdown
-      startOtpCountdown();
-
-      // In a real app, you would send the OTP to the user's phone here
-      console.log(`OTP sent to ${phone}`);
-    } else {
-      const errorMessage = document.getElementById("error-message");
-      errorMessage.textContent =
-        "Phone number not found in our winners list. Please check and try again.";
-      showModal("errorModal");
-    }
-  });
 
   // Verify OTP
   verifyOtpBtn.addEventListener("click", () => {
