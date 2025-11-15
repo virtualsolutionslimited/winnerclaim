@@ -198,7 +198,7 @@
               type="email"
               id="email"
               name="email"
-              placeholder="your.email@example.com"
+              placeholder="youremail@example.com"
             />
           </div>
 
@@ -540,6 +540,19 @@
             </div>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- No Claims Found Modal -->
+    <div class="modal" id="noClaimsModal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="modal-icon" style="font-size: 3rem; margin-bottom: 1rem;">
+          📋
+        </div>
+        <h2 style="color: #fcd115; margin-bottom: 1rem;">No Claims Found</h2>
+        <p style="margin-bottom: 1.5rem;">This phone number doesn't have any registered claims. Please check the number and try again.</p>
+        <button class="btn btn-primary" onclick="hideModal('noClaimsModal')">Got it</button>
       </div>
     </div>
 

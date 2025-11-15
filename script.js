@@ -799,12 +799,21 @@ function initMyClaimsPhoneForm() {
     const winner = findWinnerByPhone(phoneNumber);
 
     if (winner) {
-      // Show claims list modal
-      showClaimsList(winner);
-      hideModal();
-      showModal("myClaimsListModal");
+      // Check if winner has any claims
+      if (winner.claims && winner.claims.length > 0) {
+        // Show claims list modal
+        showClaimsList(winner);
+        hideModal();
+        showModal("myClaimsListModal");
+      } else {
+        // Show no claims modal
+        hideModal();
+        showModal("noClaimsModal");
+      }
     } else {
-      showError("No claims found for this phone number");
+      // Show no claims modal for non-winners too
+      hideModal();
+      showModal("noClaimsModal");
     }
   });
 }
@@ -986,7 +995,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (winner) {
       // Pre-fill the account creation form
       document.getElementById("accountPhone").value = winner.phone;
-      document.getElementById("email").value = winner.email || "";
 
       // Show the account creation modal
       hideModal();
