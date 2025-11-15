@@ -607,7 +607,11 @@ function initKycForm() {
   if (fileOption) {
     fileOption.addEventListener("click", (e) => {
       e.preventDefault();
-      fileInput.click();
+      e.stopPropagation();
+      const fileInput = document.getElementById("fileInput");
+      if (fileInput) {
+        fileInput.click();
+      }
     });
   }
 
@@ -653,15 +657,16 @@ function initKycForm() {
 
   // Validate form
   function validateKycForm() {
-    if (!ghanaCardInput || !submitKycBtn) return false;
+    if (!ghanaCardInput || !submitKycBtn) return true;
 
     const isGhanaCardValid = ghanaCardInput.validity.valid;
     const hasImage =
       (previewImage && previewImage.src && previewImage.src !== "") ||
       capturedImage;
 
-    submitKycBtn.disabled = !(isGhanaCardValid && hasImage);
-    return isGhanaCardValid && hasImage;
+    // Always enable submit button
+    submitKycBtn.disabled = false;
+    return true;
   }
 
   // Display image preview
