@@ -217,7 +217,8 @@ p {
   align-items: center;
   min-width: 80px;
   padding: 15px 10px;
-  background: rgba(30, 30, 30, 0.8);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
