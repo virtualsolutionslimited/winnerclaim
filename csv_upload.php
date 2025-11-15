@@ -1,20 +1,37 @@
 <?php
-/**
- * CSV Template Generator and Upload System for Winners
- * Simple solution without external dependencies
- */
+require_once 'db.php';
+require_once 'draw_functions.php';
 
-// Database configuration
-$host = '127.0.0.1';
-$dbname = 'raffle';
-$username = 'root';
-$password = '';
+// Get upcoming draws for dropdown
+$upcomingDraws = [];
+try {
+    $upcomingDraws = getUpcomingDraws($pdo, 10); // Get next 10 draws
+    
+    // Debug: Check if we found any draws
+    error_log("CSV Upload - Found " . count($upcomingDraws) . " upcoming draws");
+    
+    // If no upcoming draws, try to get all draws as a fallback
+    if (empty($upcomingDraws)) {
+        error_log("No upcoming draws found, trying fallback to get all draws");
+        $stmt = $pdo->query("SELECT * FROM draw_dates ORDER BY date ASC LIMIT 10");
+        $allDraws = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $now = new DateTime();
+        foreach ($allDraws as $draw) {
+            $drawDate = new DateTime($draw['date']);
+            $upcomingDraws[] = formatDrawInfo($draw, $drawDate, $now);
+        }
+        
+        error_log("Fallback found " . count($upcomingDraws) . " total draws");
+    }
+    
+} catch (Exception $e) {
+    error_log("Error getting upcoming draws: " . $e->getMessage());
+}
 
 $message = '';
 $error = '';
 $uploadedCount = 0;
-
-// Handle template download
 if (isset($_GET['download_template'])) {
     // Set headers for CSV download
     header('Content-Type: text/csv');
@@ -41,6 +58,12 @@ if (isset($_GET['download_template'])) {
 // Handle file upload
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     try {
+        // Check if draw week was selected
+        if (!isset($_POST['draw_week']) || empty($_POST['draw_week'])) {
+            throw new Exception("Please select a draw week for the upload.");
+        }
+        $drawWeekId = (int)$_POST['draw_week'];
+        
         // Check if file was uploaded
         if ($_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
             throw new Exception("File upload error: " . $_FILES['csv_file']['error']);
@@ -79,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         
         $rowNumber = 0;
         $errors = [];
+        $batch = [];
         
         // Connect to database
         $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
@@ -86,8 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         
         // Prepare insert statement
         $stmt = $pdo->prepare("
-            INSERT INTO winners (name, phone, is_claimed, createdAt, updatedAt) 
-            VALUES (?, ?, 0, NOW(), NOW())
+            INSERT INTO winners (name, phone, draw_week, createdAt, updatedAt) 
+            VALUES (?, ?, ?, NOW(), NOW())
         ");
         
         while (($data = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
@@ -127,9 +151,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                     continue;
                 }
                 
-                // Insert into database
-                $stmt->execute([$name, $phone]);
-                $uploadedCount++;
+                // Add to batch with draw week
+                $batch[] = [
+                    'name' => $name,
+                    'phone' => $phone,
+                    'draw_week' => $drawWeekId
+                ];
                 
             } catch (PDOException $e) {
                 $errors[] = "Row $rowNumber: Database error - " . $e->getMessage();
@@ -139,6 +166,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         }
         
         fclose($handle);
+        
+        // Prepare and execute insert statement with draw week
+        $stmt = $pdo->prepare("
+            INSERT INTO winners (name, phone, draw_week, createdAt, updatedAt) 
+            VALUES (?, ?, ?, NOW(), NOW())
+        ");
+        
+        foreach ($batch as $row) {
+            $stmt->execute([$row['name'], $row['phone'], $row['draw_week']]);
+            $uploadedCount++;
+        }
         
         if ($uploadedCount > 0) {
             $message = "Successfully uploaded $uploadedCount winners!";
@@ -252,11 +290,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             transform: scale(1.05);
         }
         
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+        
+        .form-group select,
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #fff;
+        }
+        
+        .form-group select:focus,
+        .form-group input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-group select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+            padding-right: 40px;
+        }
+        
+        .form-group input[type="file"] {
+            padding: 10px 15px;
+        }
+        
+        .form-group input[type="file"]::file-selector-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 15px;
+            transition: transform 0.2s ease;
+        }
+        
+        .form-group input[type="file"]::file-selector-button:hover {
+            transform: scale(1.05);
+        }
+        
         .upload-form {
             background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 15px;
             margin-bottom: 20px;
+            border: 1px solid #e9ecef;
         }
         
         .file-input-wrapper {
@@ -443,16 +542,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                     <li>Select the saved CSV file below and upload</li>
                     <li>System will validate and insert data into the winners table</li>
                 </ol>
+                
+                <?php if (empty($upcomingDraws)): ?>
+                    <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
+                        <strong>⚠️ No Draw Weeks Available</strong><br>
+                        The draw dates table appears to be empty. Please <a href="run_seeder.php" style="color: #667eea; font-weight: bold;">run the draw dates seeder</a> first to populate upcoming draw weeks.
+                    </div>
+                <?php endif; ?>
             </div>
             
-            <form method="POST" enctype="multipart/form-data" class="upload-form">
-                <div class="file-input-wrapper">
-                    <input type="file" name="csv_file" class="file-input" accept=".csv" required>
-                    <div class="file-input-button">
-                        📁 Choose CSV File
-                    </div>
+            <form action="" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+                <div class="form-group">
+                    <label for="draw_week">Select Draw Week:</label>
+                    <select name="draw_week" id="draw_week" required>
+                        <option value="">-- Choose Draw Week --</option>
+                        <?php if (!empty($upcomingDraws)): ?>
+                            <?php foreach ($upcomingDraws as $draw): ?>
+                                <option value="<?php echo $draw['id']; ?>">
+                                    <?php echo $draw['formatted']; ?>
+                                    <?php if ($draw['is_today']): echo ' (Today)'; endif; ?>
+                                    <?php if ($draw['days_until'] == 0): echo ' (Tomorrow)'; elseif ($draw['days_until'] <= 7): echo ' (In ' . $draw['days_until'] . ' days)'; endif; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <option value="">No upcoming draws available</option>
+                        <?php endif; ?>
+                    </select>
                 </div>
-                <div class="file-name" id="file-name">No file selected</div>
+                
+                <div class="form-group">
+                    <label for="csv_file">Choose CSV file:</label>
+                    <input type="file" name="csv_file" id="csv_file" accept=".csv" required>
+                </div>
                 
                 <button type="submit" class="submit-btn">
                     🚀 Upload Winners Data
@@ -462,6 +583,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     </div>
     
     <script>
+        function validateForm() {
+            const fileInput = document.getElementById('csv_file');
+            const drawWeekInput = document.getElementById('draw_week');
+            
+            if (!drawWeekInput.value) {
+                alert('Please select a draw week.');
+                drawWeekInput.focus();
+                return false;
+            }
+            
+            if (fileInput.files.length === 0) {
+                alert('Please select a file to upload.');
+                fileInput.focus();
+                return false;
+            }
+            
+            const fileName = fileInput.files[0].name;
+            if (!fileName.endsWith('.csv')) {
+                alert('Please select a CSV file.');
+                fileInput.focus();
+                return false;
+            }
+            
+            return true;
+        }
+        
         // Update file name when file is selected
         document.querySelector('.file-input').addEventListener('change', function(e) {
             const fileName = e.target.files[0]?.name || 'No file selected';

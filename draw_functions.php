@@ -102,6 +102,10 @@ function getUpcomingDraws($pdo, $limit = 5) {
     try {
         $now = new DateTime();
         
+        // Debug: Log current time for troubleshooting
+        error_log("Current time for getUpcomingDraws: " . $now->format('Y-m-d H:i:s'));
+        
+        // Get draws from today onwards (including today)
         $stmt = $pdo->prepare("
             SELECT * FROM draw_dates 
             WHERE date >= ? 
@@ -115,6 +119,9 @@ function getUpcomingDraws($pdo, $limit = 5) {
             $drawDate = new DateTime($draw['date']);
             $draws[] = formatDrawInfo($draw, $drawDate, $now);
         }
+        
+        // Debug: Log how many draws were found
+        error_log("Found " . count($draws) . " upcoming draws");
         
         return $draws;
         
