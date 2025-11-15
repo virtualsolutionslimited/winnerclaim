@@ -790,8 +790,8 @@ if ($currentDraw) {
     </div>
 
     <!-- Claim Detail Modal -->
-    <div class="modal" id="claimDetailModal">
-      <div class="modal-content" style="max-width: 600px;">
+    <div class="modal claim-detail-modal" id="claimDetailModal">
+      <div class="modal-content" style="max-width: 900px; width: 95%;">
         <span class="close-btn">&times;</span>
         <div class="modal-header">
           <h2>Claim Details</h2>

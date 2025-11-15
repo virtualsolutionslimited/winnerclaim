@@ -1231,14 +1231,22 @@ function showClaimsList(winner) {
       row.innerHTML = `
         <td>${drawDate}</td>
         <td>
-          <button class="download-btn" onclick="viewClaimDetail(${JSON.stringify(
+          <button class="download-btn view-claim-btn" data-claim='${JSON.stringify(
             claim
-          ).replace(/"/g, "&quot;")})">
+          )}'>
             View
           </button>
         </td>
       `;
       claimsTableBody.appendChild(row);
+    });
+
+    // Add event listeners to view buttons
+    document.querySelectorAll(".view-claim-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const claimData = JSON.parse(this.getAttribute("data-claim"));
+        viewClaimDetail(claimData);
+      });
     });
   } else {
     // Show no claims message
@@ -1257,6 +1265,7 @@ let currentClaimDetail = null;
 
 function viewClaimDetail(claim) {
   console.log("viewClaimDetail called with:", claim);
+
   currentClaimDetail = claim;
 
   // Populate the detail modal
@@ -1286,9 +1295,14 @@ function viewClaimDetail(claim) {
   document.getElementById("detailDrawDate").textContent = drawDate;
   document.getElementById("detailDateClaimed").textContent = dateClaimed;
 
-  // Status
+  // Status with badge styling
+  const statusElement = document.getElementById("detailStatus");
   const status = claim.is_claimed ? "Claimed" : "Pending";
-  document.getElementById("detailStatus").textContent = status;
+  statusElement.textContent = status;
+
+  // Apply status badge classes
+  statusElement.className =
+    "status-badge " + (claim.is_claimed ? "status-claimed" : "status-pending");
 
   // Show the modal
   console.log("Showing claimDetailModal");
