@@ -925,6 +925,11 @@ p {
   transform: translateY(0);
 }
 
+.modal-actions {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
 /* KYC Upload Styles */
 .upload-options {
   display: flex;
