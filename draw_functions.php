@@ -11,16 +11,81 @@
 function getCurrentDrawWeek($pdo) {
     try {
         $now = new DateTime();
+        $today = $now->format('N'); // 1=Monday, 7=Sunday
+        $currentTime = $now->format('H:i');
         
-        // Get the next draw date from today onwards
+        // Find the most recent Sunday draw (current draw week)
+        // Logic: Current draw is always the most recent Sunday, even if draw time has passed
+        if ($today == 7) { // Today is Sunday
+            // If Sunday before 6 PM, look for today's draw
+            if ($currentTime < '18:00') {
+                // Look for today's draw
+                $todayStart = $now->format('Y-m-d 00:00:00');
+                $todayEnd = $now->format('Y-m-d 23:59:59');
+                
+                $stmt = $pdo->prepare("
+                    SELECT * FROM draw_dates 
+                    WHERE date >= ? AND date <= ?
+                    ORDER BY date ASC 
+                    LIMIT 1
+                ");
+                $stmt->execute([$todayStart, $todayEnd]);
+                $draw = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($draw) {
+                    $drawDate = new DateTime($draw['date']);
+                    return formatDrawInfo($draw, $drawDate, $now);
+                }
+            }
+            // If Sunday after 6 PM or no draw found for today, look for today's draw anyway
+            // because it's still the current draw week until next Sunday
+            $todayStart = $now->format('Y-m-d 00:00:00');
+            $todayEnd = $now->format('Y-m-d 23:59:59');
+            
+            $stmt = $pdo->prepare("
+                SELECT * FROM draw_dates 
+                WHERE date >= ? AND date <= ?
+                ORDER BY date DESC 
+                LIMIT 1
+            ");
+            $stmt->execute([$todayStart, $todayEnd]);
+            $draw = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($draw) {
+                $drawDate = new DateTime($draw['date']);
+                return formatDrawInfo($draw, $drawDate, $now);
+            }
+        }
+        
+        // For Monday-Saturday, or if no Sunday draw found, get the most recent Sunday draw
+        $weekStart = clone $now;
+        $weekStart->modify('last sunday');
+        $weekStart->setTime(0, 0, 0);
+        $weekEnd = clone $weekStart;
+        $weekEnd->setTime(23, 59, 59);
+        
         $stmt = $pdo->prepare("
             SELECT * FROM draw_dates 
-            WHERE date >= ? 
-            ORDER BY date ASC 
+            WHERE date >= ? AND date <= ?
+            ORDER BY date DESC 
+            LIMIT 1
+        ");
+        $stmt->execute([$weekStart->format('Y-m-d H:i:s'), $weekEnd->format('Y-m-d H:i:s')]);
+        $draw = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($draw) {
+            $drawDate = new DateTime($draw['date']);
+            return formatDrawInfo($draw, $drawDate, $now);
+        }
+        
+        // Fallback: get the most recent draw if no Sunday draw found
+        $stmt = $pdo->prepare("
+            SELECT * FROM draw_dates 
+            WHERE date <= ?
+            ORDER BY date DESC 
             LIMIT 1
         ");
         $stmt->execute([$now->format('Y-m-d H:i:s')]);
-        
         $draw = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($draw) {
@@ -105,14 +170,28 @@ function getUpcomingDraws($pdo, $limit = 5) {
         // Debug: Log current time for troubleshooting
         error_log("Current time for getUpcomingDraws: " . $now->format('Y-m-d H:i:s'));
         
-        // Get draws from today onwards (including today)
-        $stmt = $pdo->prepare("
-            SELECT * FROM draw_dates 
-            WHERE date >= ? 
-            ORDER BY date ASC 
-            LIMIT ?
-        ");
-        $stmt->execute([$now->format('Y-m-d H:i:s'), $limit]);
+        // Get current draw first to exclude it
+        $currentDraw = getCurrentDrawWeek($pdo);
+        
+        if ($currentDraw) {
+            // Get draws after the current draw
+            $stmt = $pdo->prepare("
+                SELECT * FROM draw_dates 
+                WHERE date > ? 
+                ORDER BY date ASC 
+                LIMIT ?
+            ");
+            $stmt->execute([$currentDraw['datetime'], $limit]);
+        } else {
+            // If no current draw, get future draws from today
+            $stmt = $pdo->prepare("
+                SELECT * FROM draw_dates 
+                WHERE date >= ? 
+                ORDER BY date ASC 
+                LIMIT ?
+            ");
+            $stmt->execute([$now->format('Y-m-d H:i:s'), $limit]);
+        }
         
         $draws = [];
         while ($draw = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -196,7 +275,38 @@ function formatDrawInfo($draw, $drawDate, $now) {
  * @param DateTime $now Current date
  * @return string Status description
  */
+/**
+ * Check if a draw is the current week draw (most recent Sunday)
+ * @param DateTime $drawDate The draw date
+ * @param DateTime $now Current date/time
+ * @return bool True if this is the current week draw
+ */
+function isCurrentWeekDraw($drawDate, $now) {
+    $today = $now->format('N'); // 1=Monday, 7=Sunday
+    $drawDay = $drawDate->format('N');
+    
+    // Current week draw is always the most recent Sunday
+    if ($drawDay != 7) {
+        return false; // Only Sunday draws can be current week draws
+    }
+    
+    if ($today == 7) { // Today is Sunday
+        // Today's Sunday draw is always current
+        return $drawDate->format('Y-m-d') === $now->format('Y-m-d');
+    } else {
+        // For Monday-Saturday, current draw is last Sunday
+        $lastSunday = clone $now;
+        $lastSunday->modify('last sunday');
+        return $drawDate->format('Y-m-d') === $lastSunday->format('Y-m-d');
+    }
+}
+
 function getDrawStatus($drawDate, $now) {
+    // Check if this is the current week draw
+    if (isCurrentWeekDraw($drawDate, $now)) {
+        return 'current';
+    }
+    
     if ($drawDate < $now) {
         return 'completed';
     } elseif ($drawDate->format('Y-m-d') === $now->format('Y-m-d')) {
