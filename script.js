@@ -648,7 +648,7 @@ function initAccountForm() {
   // Initialize button state
   updateSubmitButton();
 
-  accountForm.addEventListener("submit", (e) => {
+  accountForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const email = emailField.value.trim();
@@ -657,6 +657,10 @@ function initAccountForm() {
     const isAccountHolder = accountHolderCheckbox.checked;
     const termsAgreement = termsCheckbox.checked;
     const privacyAgreement = privacyCheckbox.checked;
+
+    // Get phone number from the hidden field or from the previous step
+    const phone =
+      document.getElementById("accountPhone")?.value || phoneInput.value.trim();
 
     // Validate form
     if (email && !email.includes("@")) {
@@ -703,17 +707,59 @@ function initAccountForm() {
       return;
     }
 
-    // In a real app, you would create the account here
-    console.log("Creating account:", {
-      email,
-      password,
-      isAccountHolder,
-      termsAgreement,
-      privacyAgreement,
-    });
+    // Disable submit button while processing
+    const submitBtn = accountForm.querySelector(".submit-btn");
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Creating Account...";
 
-    hideModal();
-    showModal("contractModal");
+    try {
+      // Send account data to API to store in session
+      const response = await fetch("api_account.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          action: "create_account",
+          phone: phone,
+          email: email,
+          password: password,
+          is_account_holder: isAccountHolder,
+          terms_agreement: termsAgreement,
+          privacy_agreement: privacyAgreement,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        // Store account data locally for later use
+        currentUser = {
+          phone: phone,
+          email: email,
+          ...result.winner_info,
+        };
+
+        // Hide current modal and show contract modal
+        hideModal();
+        showModal("contractModal");
+      } else {
+        // Show error message
+        const errorMessage = document.getElementById("error-message");
+        errorMessage.textContent = result.message || "Failed to create account";
+        showModal("errorModal");
+      }
+    } catch (error) {
+      console.error("Error creating account:", error);
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.textContent = "Network error. Please try again.";
+      showModal("errorModal");
+    } finally {
+      // Re-enable submit button
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+    }
   });
 }
 // Initialize Contract Form
@@ -1035,31 +1081,57 @@ function initKycForm() {
   }
 
   // Submit KYC
-  function submitKyc() {
+  async function submitKyc() {
     if (!validateKycForm()) return;
 
     const ghanaCard = ghanaCardInput.value.trim();
+    const submitKycBtn = document.getElementById("submitKycBtn");
+    const originalText = submitKycBtn.textContent;
 
-    // In a real app, you would upload the file and submit the form data here
-    console.log("Submitting KYC:", {
-      ghanaCard,
-      hasImage: !!capturedImage,
-    });
+    // Disable button while processing
+    submitKycBtn.disabled = true;
+    submitKycBtn.textContent = "Submitting...";
 
-    // Update user data
-    if (currentUser) {
-      updateWinnerData(currentUser.phone, {
-        ghanaCard: ghanaCard,
-        kycCompleted: true,
-        kycVerifiedAt: new Date().toISOString(),
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append("action", "create_claim");
+      formData.append("ghana_card", ghanaCard);
+
+      // Add selfie image if captured
+      if (capturedImage) {
+        formData.append("selfie_image", capturedImage);
+      }
+
+      const response = await fetch("api_claim.php", {
+        method: "POST",
+        body: formData,
       });
-    }
 
-    // Show success modal
-    hideModal();
-    const successModal = document.getElementById("successModal");
-    if (successModal) {
-      successModal.classList.add("show");
+      const result = await response.json();
+
+      if (result.status === "success") {
+        // Show success modal
+        hideModal();
+        const successModal = document.getElementById("successModal");
+        if (successModal) {
+          successModal.classList.add("show");
+        }
+      } else {
+        // Show error message
+        const errorMessage = document.getElementById("error-message");
+        errorMessage.textContent = result.message || "Failed to submit KYC";
+        showModal("errorModal");
+      }
+    } catch (error) {
+      console.error("Error submitting KYC:", error);
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.textContent = "Network error. Please try again.";
+      showModal("errorModal");
+    } finally {
+      // Re-enable submit button
+      submitKycBtn.disabled = false;
+      submitKycBtn.textContent = originalText;
     }
   }
 
@@ -1754,16 +1826,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Account creation form
-  document
-    .getElementById("createAccountForm")
-    .addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      // In a real app, you would create the account here
-      hideModal();
-      showModal("contractModal");
-    });
-
   // Contract acceptance
   const acceptContractBtn = document.getElementById("acceptContractBtn");
   const termCheckboxes = document.querySelectorAll(
