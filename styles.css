@@ -111,7 +111,6 @@ body {
 /* Steps Container */
 .steps-container {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   gap: var(--spacing-md);
   margin: var(--spacing-xl) 0;
@@ -127,9 +126,7 @@ body {
   transition: transform var(--transition-normal),
     box-shadow var(--transition-normal);
   border: 1px solid var(--border-color);
-  flex: 1;
-  min-width: 200px;
-  max-width: 220px;
+  flex: 0 0 calc(20% - var(--spacing-md) * 0.8);
   text-align: center;
 }
 
@@ -166,7 +163,7 @@ body {
   font-size: 0.9rem;
   color: var(--text-secondary);
   line-height: 1.5;
-  text-align: left;
+  text-align: center;
 }
 
 h1 {
@@ -490,9 +487,11 @@ p {
   .steps-container {
     gap: var(--spacing-sm);
     margin: var(--spacing-lg) 0;
+    flex-wrap: wrap;
   }
 
   .step {
+    flex: 0 0 calc(33.333% - var(--spacing-sm) * 0.66);
     min-width: 160px;
     max-width: 180px;
     padding: var(--spacing-md);
@@ -1125,9 +1124,11 @@ p {
   .steps-container {
     gap: var(--spacing-xs);
     margin: var(--spacing-md) 0;
+    flex-wrap: wrap;
   }
 
   .step {
+    flex: 0 0 calc(50% - var(--spacing-xs) * 0.5);
     min-width: 140px;
     max-width: 160px;
     padding: var(--spacing-sm);
