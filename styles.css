@@ -1042,6 +1042,15 @@ p {
   box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
 }
 
+#successModal .close-btn {
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 10;
+}
+
+#successModal .close-btn:hover {
+  color: #fff;
+}
+
 /* Contract Styles - Updated with brand colors */
 .contract-container {
   background: transparent;

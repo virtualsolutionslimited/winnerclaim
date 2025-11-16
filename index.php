@@ -640,6 +640,7 @@ if ($currentDraw) {
     <!-- Success Modal -->
     <div class="modal" id="successModal">
       <div class="modal-content success-modal">
+        <span class="close-btn">&times;</span>
         <div class="success-icon">🎉</div>
         <h2>Your Winner Contract is Activated!</h2>
         <p>
