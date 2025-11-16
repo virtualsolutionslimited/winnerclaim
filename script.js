@@ -238,6 +238,23 @@ function hideModal(modalId) {
   }
 }
 
+// Show Summary Modal with user data
+function showSummaryModal() {
+  // Try to get account data from session storage
+  const accountData = JSON.parse(sessionStorage.getItem("accountData") || "{}");
+
+  // Populate summary modal with data
+  document.getElementById("summary-phone").textContent =
+    accountData.phone || "N/A";
+  document.getElementById("summary-email").textContent =
+    accountData.email || "N/A";
+  document.getElementById("summary-account-holder").textContent =
+    accountData.isAccountHolder === "yes" ? "Yes" : "No";
+
+  // Show the summary modal
+  showModal("summaryModal");
+}
+
 // Initialize OTP Flow
 function initOtpFlow() {
   if (sendOtpBtn) {
@@ -1736,15 +1753,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Success modal actions
-  document.getElementById("downloadContract").addEventListener("click", () => {
-    // In a real app, this would generate and download a PDF
-    alert("Contract download will be available in the full version");
-  });
-
   document.getElementById("finishBtn").addEventListener("click", () => {
+    // Hide success modal and show summary modal
     hideModal();
-    // Reset forms for next use
-    document.querySelectorAll("form").forEach((form) => form.reset());
+    showSummaryModal();
   });
 
   // OK button handler for error modal

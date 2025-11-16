@@ -1852,6 +1852,65 @@ p {
   outline: none;
 }
 
+/* Summary Modal Styles */
+#summaryModal .modal-content {
+  max-width: 700px;
+  background: linear-gradient(135deg, #170742 0%, #2a1a5a 100%);
+  border: 2px solid rgba(252, 209, 21, 0.2);
+}
+
+.summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.summary-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid rgba(252, 209, 21, 0.1);
+}
+
+.summary-section h3 {
+  color: #fcd115;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-item label {
+  color: #b8b8d1;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.summary-item span {
+  color: #ffffff;
+  font-weight: 400;
+  text-align: right;
+}
+
+.status-processing {
+  color: #ff5722;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .modal-content {

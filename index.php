@@ -663,10 +663,7 @@ if ($currentDraw) {
         </div>
 
         <div class="success-actions">
-          <button id="downloadContract" class="secondary-btn">
-            📄 Download Contract (PDF)
-          </button>
-          <button id="finishBtn" class="primary-btn">Finish</button>
+          <button id="finishBtn" class="primary-btn">View</button>
         </div>
       </div>
     </div>
@@ -680,6 +677,68 @@ if ($currentDraw) {
         <p id="error-message"></p>
         <div class="modal-actions">
           <button class="ok-btn" onclick="hideModal()">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Modal -->
+    <div class="modal" id="summaryModal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Claim Summary</h2>
+        
+        <div class="summary-content">
+          <div class="summary-section">
+            <h3>Personal Information</h3>
+            <div class="summary-item">
+              <label>Phone:</label>
+              <span id="summary-phone"></span>
+            </div>
+            <div class="summary-item">
+              <label>Email:</label>
+              <span id="summary-email"></span>
+            </div>
+            <div class="summary-item">
+              <label>Account Holder:</label>
+              <span id="summary-account-holder"></span>
+            </div>
+          </div>
+          
+          <div class="summary-section">
+            <h3>Verification Status</h3>
+            <div class="summary-item">
+              <label>Ghana Card:</label>
+              <span id="summary-ghana-card">✅ Uploaded</span>
+            </div>
+            <div class="summary-item">
+              <label>Selfie Photo:</label>
+              <span id="summary-selfie">✅ Uploaded</span>
+            </div>
+            <div class="summary-item">
+              <label>Terms Agreement:</label>
+              <span id="summary-terms">✅ Accepted</span>
+            </div>
+            <div class="summary-item">
+              <label>Privacy Agreement:</label>
+              <span id="summary-privacy">✅ Accepted</span>
+            </div>
+          </div>
+          
+          <div class="summary-section">
+            <h3>Prize Details</h3>
+            <div class="summary-item">
+              <label>Prize:</label>
+              <span>World Cup Experience</span>
+            </div>
+            <div class="summary-item">
+              <label>Status:</label>
+              <span class="status-processing">Processing</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button class="primary-btn" onclick="hideModal()">Close</button>
         </div>
       </div>
     </div>
