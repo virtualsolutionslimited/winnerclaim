@@ -357,7 +357,7 @@ if ($currentDraw) {
       <div class="modal-content">
         <span class="close-btn">&times;</span>
         <div class="step-indicator">Step 2 of 4: Create Account</div>
-        <h2>Create Your Account</h2>
+        <h2 id="accountTitle">Create Your Account</h2>
         <p>Set up your account with a secure password</p>
         <p>Secure access for the MoMo account holder</p>
 

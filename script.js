@@ -176,6 +176,16 @@ function showModal(modalId) {
     document.body.style.overflow = "hidden";
     console.log("Modal shown successfully");
 
+    // Update account modal title with winner's name
+    if (modalId === "createAccountModal") {
+      const accountTitle = document.getElementById("accountTitle");
+      const winnerInfo = window.currentWinner || currentUser;
+
+      if (accountTitle && winnerInfo && winnerInfo.name) {
+        accountTitle.textContent = `Hi ${winnerInfo.name}. You are a winner! Create Your Account`;
+      }
+    }
+
     // Re-initialize OTP flow if phone verification modal is shown
     if (modalId === "phoneVerificationModal") {
       // Re-add event listeners for OTP inputs
