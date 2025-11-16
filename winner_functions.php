@@ -373,7 +373,7 @@ function createClaimForDrawWeek($pdo, $claimData, $drawWeekId) {
             
             $successMessage = "🎉 CONGRATULATIONS! Your prize claim has been successfully processed for " . 
                              $formattedDate . ". Your winner ID is " . $winner['id'] . 
-                             ". We will contact you soon for prize collection details. Thank you!";
+                             ".";
             
             $smsResult = sendSMS($winner['phone'], $successMessage);
             
