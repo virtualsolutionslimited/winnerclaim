@@ -83,7 +83,7 @@ $uploadedCount = 0;
 $uploadedWinners = []; // Store uploaded winners for display
 
 if (isset($_GET['download_template'])) {
-    // Create a CSV template with Excel text formatting instructions
+    // Create a CSV template with proper text formatting
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment;filename="winners_template.csv"');
     header('Cache-Control: max-age=0');
@@ -93,8 +93,8 @@ if (isset($_GET['download_template'])) {
     // Add BOM for proper UTF-8 encoding in Excel
     fwrite($output, "\xEF\xBB\xBF");
     
-    // Write headers only - no sample data
-    fwrite($output, "Name,Phone\n");
+    // Write headers using fputcsv for proper CSV formatting
+    fputcsv($output, ['Name', 'Phone']);
     
     fclose($output);
     exit;
@@ -838,7 +838,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                 <table>
                     <thead>
                         <tr>
-                            <th>Row</th>
                             <th>Name</th>
                             <th>Phone</th>
                         </tr>
@@ -846,7 +845,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                     <tbody>
                         <?php foreach ($uploadedWinners as $winner): ?>
                         <tr>
-                            <td><?php echo $winner['row']; ?></td>
                             <td><?php echo htmlspecialchars($winner['name']); ?></td>
                             <td><?php echo htmlspecialchars($winner['phone']); ?></td>
                         </tr>
