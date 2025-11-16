@@ -78,12 +78,18 @@ try {
             }
             
             // Prepare claim data
+            $selfiePath = null;
+            $ghanaCardPath = null;
+            
             $claimData = [
                 'phone' => $phone,
                 'email' => $email,
                 'password' => $password, // In production, this should be hashed
                 'ghana_card' => $ghanaCard,
                 'selfie_image' => $selfieImage,
+                'ghanacard_number' => $ghanaCard,
+                'photo' => $selfiePath,
+                'ghanacard_photo' => $ghanaCardPath,
                 'is_account_holder' => $isAccountHolder,
                 'terms_agreement' => $termsAgreement,
                 'privacy_agreement' => $privacyAgreement,
@@ -101,7 +107,8 @@ try {
                 $uploadFile = $uploadDir . $fileName;
                 
                 if (move_uploaded_file($selfieImage['tmp_name'], $uploadFile)) {
-                    $claimData['selfie_path'] = $uploadFile;
+                    $selfiePath = $uploadFile;
+                    $claimData['photo'] = $uploadFile;
                 } else {
                     echo json_encode([
                         'status' => 'error',
@@ -122,7 +129,8 @@ try {
                 $uploadFile = $uploadDir . $fileName;
                 
                 if (move_uploaded_file($ghanaCardImage['tmp_name'], $uploadFile)) {
-                    $claimData['ghana_card_path'] = $uploadFile;
+                    $ghanaCardPath = $uploadFile;
+                    $claimData['ghanacard_photo'] = $uploadFile;
                 } else {
                     echo json_encode([
                         'status' => 'error',
