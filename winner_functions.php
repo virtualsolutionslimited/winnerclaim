@@ -347,17 +347,29 @@ function createClaimForDrawWeek($pdo, $claimData, $drawWeekId) {
                 photo = ?,
                 ghanacard_number = ?,
                 ghanacard_photo = ?,
+                age_range = ?,
+                guardian_name = ?,
+                guardian_phone = ?,
                 is_claimed = 1,
                 updatedAt = NOW()
             WHERE id = ?
         ");
         
+        // Add GHA- prefix to Ghana card number if provided
+        $ghanaCardNumber = $claimData['ghanacard_number'] ?? null;
+        if ($ghanaCardNumber && !str_starts_with($ghanaCardNumber, 'GHA-')) {
+            $ghanaCardNumber = 'GHA-' . $ghanaCardNumber;
+        }
+        
         $result = $stmt->execute([
             $claimData['email'] ?? null,
             $claimData['password'] ?? null,
             $claimData['photo'] ?? null,
-            $claimData['ghanacard_number'] ?? null,
+            $ghanaCardNumber,
             $claimData['ghanacard_photo'] ?? null,
+            $claimData['age_range'] ?? null,
+            $claimData['guardian_name'] ?? null,
+            $claimData['guardian_phone'] ?? null,
             $winner['id']
         ]);
         

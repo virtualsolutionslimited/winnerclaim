@@ -794,14 +794,8 @@ function initContractForm() {
   const acceptButton = document.getElementById("acceptContractBtn");
   const backButton = contractForm.querySelector(".back-btn");
 
-  // Function to check if all required checkboxes are checked
-  function checkAllTermsAccepted() {
-    const allChecked = Array.from(termCheckboxes).every(
-      (checkbox) => checkbox.checked
-    );
-    acceptButton.disabled = !allChecked;
-    return allChecked;
-  }
+  // Initialize button state - disabled until age and terms are validated
+  acceptButton.disabled = true;
 
   // Add change event to all checkboxes
   termCheckboxes.forEach((checkbox) => {
@@ -1109,6 +1103,34 @@ function initKycForm() {
       // Add account data
       formData.append("phone", accountData.phone);
       formData.append("email", accountData.email);
+
+      // Get age range and guardian details from the contract form
+      const selectedAge = document.querySelector(
+        'input[name="ageRange"]:checked'
+      );
+      let ageRangeText = "";
+      if (selectedAge) {
+        if (selectedAge.value === "below18") {
+          ageRangeText = "Below 18";
+        } else if (selectedAge.value === "18to20") {
+          ageRangeText = "18 to 20";
+        } else if (selectedAge.value === "above21") {
+          ageRangeText = "21 and above";
+        }
+        formData.append("age_range", ageRangeText);
+      }
+
+      // Add guardian details if they exist
+      const guardianName = document.getElementById("guardianName");
+      const guardianPhone = document.getElementById("guardianPhone");
+
+      if (guardianName && guardianName.value.trim()) {
+        formData.append("guardian_name", guardianName.value.trim());
+      }
+
+      if (guardianPhone && guardianPhone.value.trim()) {
+        formData.append("guardian_phone", guardianPhone.value.trim());
+      }
       formData.append("password", accountData.password);
       formData.append("is_account_holder", accountData.isAccountHolder);
       formData.append("terms_agreement", accountData.termsAgreement);
@@ -1912,15 +1934,62 @@ document.addEventListener("DOMContentLoaded", () => {
       (checkbox) => checkbox.checked
     );
 
-    // Enable/disable the accept button
+    // Check age selection
+    const selectedAge = document.querySelector(
+      'input[name="ageRange"]:checked'
+    );
+    let ageValid = false;
+    let guardianDetailsValid = true;
+
+    if (!selectedAge) {
+      ageValid = false;
+    } else if (selectedAge.value === "below18") {
+      ageValid = false; // Under 18 is not eligible
+    } else if (selectedAge.value === "18to20") {
+      // For 18-20, need parental consent and guardian details
+      const parentalCheckbox = document.getElementById("parentalCheckbox");
+      const guardianName = document.getElementById("guardianName");
+      const guardianPhone = document.getElementById("guardianPhone");
+
+      if (parentalCheckbox && parentalCheckbox.checked) {
+        guardianDetailsValid =
+          guardianName.value.trim() !== "" && guardianPhone.value.trim() !== "";
+      }
+      ageValid = guardianDetailsValid && allChecked;
+    } else if (selectedAge.value === "above21") {
+      ageValid = true;
+    }
+
+    // Enable/disable the accept button - require both terms AND age validation
     if (acceptContractBtn) {
-      acceptContractBtn.disabled = !allChecked;
+      acceptContractBtn.disabled = !(allChecked && ageValid);
     }
   }
 
   termCheckboxes.forEach((checkbox) => {
     checkbox.addEventListener("change", updateAcceptButton);
   });
+
+  // Add event listeners for age radio buttons
+  const ageRadios = document.querySelectorAll('input[name="ageRange"]');
+  ageRadios.forEach((radio) => {
+    radio.addEventListener("change", updateAcceptButton);
+  });
+
+  // Add event listeners for guardian details (if they exist)
+  const guardianName = document.getElementById("guardianName");
+  const guardianPhone = document.getElementById("guardianPhone");
+  const parentalCheckbox = document.getElementById("parentalCheckbox");
+
+  if (guardianName) {
+    guardianName.addEventListener("input", updateAcceptButton);
+  }
+  if (guardianPhone) {
+    guardianPhone.addEventListener("input", updateAcceptButton);
+  }
+  if (parentalCheckbox) {
+    parentalCheckbox.addEventListener("change", updateAcceptButton);
+  }
 
   acceptContractBtn.addEventListener("click", () => {
     const winnerPhone = document.getElementById("accountPhone").value;

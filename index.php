@@ -312,7 +312,7 @@ if ($currentDraw) {
                 Verify
               </button>
             </div>
-            <small class="form-hint">Enter your 9-digit MoMo number without the leading 0</small>
+            <!-- <small class="form-hint">Enter your 9-digit MoMo number without the leading 0</small> -->
           </div>
 
           <div id="otpSection" class="form-group" style="display: none">
@@ -490,7 +490,7 @@ if ($currentDraw) {
               <div class="contract-item">
                 <input type="checkbox" id="term2" name="terms" class="term-checkbox" required />
                 <label for="term2">
-                  I understand my prize is a fully sponsored Ghana World Cup Experience, which includes subsidised return flights (Accra–Mexico–Accra), accommodation of up to 3 weeks, match tickets for Ghana's group-stage games, and full visa fee payment with document coaching.
+                  I understand my prize is a fully sponsored Ghana World Cup Experience, which includes return flights (Accra–America–Accra), accommodation of up to 3 weeks, match tickets for Ghana's group-stage games, and full visa fee payment with document coaching.
                 </label>
               </div>
 
@@ -564,7 +564,7 @@ if ($currentDraw) {
                   </div>
                   <div class="radio-item">
                     <input type="radio" id="ageAbove21" name="ageRange" value="above21" required />
-                    <label for="ageAbove21">Above 21</label>
+                    <label for="ageAbove21">21 and above</label>
                   </div>
                 </div>
               </div>

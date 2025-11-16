@@ -37,6 +37,9 @@ try {
             $termsAgreement = $_POST['terms_agreement'] ?? false;
             $privacyAgreement = $_POST['privacy_agreement'] ?? false;
             $ghanaCard = $_POST['ghana_card'] ?? '';
+            $ageRange = $_POST['age_range'] ?? '';
+            $guardianName = $_POST['guardian_name'] ?? '';
+            $guardianPhone = $_POST['guardian_phone'] ?? '';
             $selfieImage = $_FILES['selfie_image'] ?? null;
             $ghanaCardImage = $_FILES['ghana_card_image'] ?? null;
             
@@ -90,6 +93,9 @@ try {
                 'ghanacard_number' => $ghanaCard,
                 'photo' => $selfiePath,
                 'ghanacard_photo' => $ghanaCardPath,
+                'age_range' => $ageRange,
+                'guardian_name' => $guardianName,
+                'guardian_phone' => $guardianPhone,
                 'is_account_holder' => $isAccountHolder,
                 'terms_agreement' => $termsAgreement,
                 'privacy_agreement' => $privacyAgreement,
