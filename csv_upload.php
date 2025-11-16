@@ -81,23 +81,27 @@ $message = '';
 $error = '';
 $uploadedCount = 0;
 if (isset($_GET['download_template'])) {
-    // Set headers for CSV download
+    // Create a CSV template with Excel text formatting instructions
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment;filename="winners_template.csv"');
     header('Cache-Control: max-age=0');
     
-    // Open output stream
     $output = fopen('php://output', 'w');
     
     // Add BOM for proper UTF-8 encoding in Excel
     fwrite($output, "\xEF\xBB\xBF");
     
-    // Write header row with tab delimiter (Excel's default)
-    fwrite($output, "Name\tPhone\n");
+    // Write headers
+    fwrite($output, "Name,Phone\n");
     
-    // Add sample data (optional)
-    fwrite($output, "John Doe\t0201234567\n");
-    fwrite($output, "Jane Smith\t0507654321\n");
+    // Add sample data with leading apostrophe to force text format in Excel
+    // The apostrophe tells Excel to treat the value as text, not a number
+    fwrite($output, "John Doe,'0201234567\n");
+    fwrite($output, "Jane Smith,'0507654321\n");
+    fwrite($output, "Mike Johnson,'0548664851\n");
+    fwrite($output, "Sarah Williams,'0241234567\n");
+    fwrite($output, "David Brown,'233548664851\n");  // Example with 233 prefix
+    fwrite($output, "Emma Davis,'548664851\n");       // Example 9-digit number
     
     fclose($output);
     exit;
@@ -534,6 +538,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             line-height: 1.5;
         }
         
+        .phone-format-note {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .phone-format-note h5 {
+            color: #007bff;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .phone-format-note ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .phone-format-note li {
+            margin-bottom: 5px;
+            color: #495057;
+            font-size: 13px;
+        }
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 2rem;
@@ -597,11 +626,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                 <h4>Instructions:</h4>
                 <ol>
                     <li>Download and open the CSV template in Excel</li>
+                    <li>The template has phone numbers pre-formatted as text to prevent scientific notation</li>
                     <li>Fill the template with winner data (Name and Phone columns)</li>
+                    <li><strong>Phone formats accepted:</strong> 548664851, 233548664851, 0201234567, etc.</li>
                     <li>Save the file as CSV format in Excel</li>
                     <li>Select the saved CSV file below and upload</li>
-                    <li>System will validate and insert data into the winners table</li>
+                    <li>System will validate and normalize phone numbers automatically</li>
                 </ol>
+                
+                <div class="phone-format-note">
+                    <h5>📱 Phone Number Formatting:</h5>
+                    <ul>
+                        <li><strong>9-digit numbers:</strong> 548664851 → 0548664851</li>
+                        <li><strong>233 prefix:</strong> 233548664851 → 0548664851</li>
+                        <li><strong>Already formatted:</strong> 0201234567 → 0201234567</li>
+                        <li><strong>Excel scientific notation:</strong> 2.33E+11 → 0548664851</li>
+                    </ul>
+                </div>
                 
                 <?php if (empty($upcomingDraws)): ?>
                     <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
