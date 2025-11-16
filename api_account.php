@@ -1,11 +1,68 @@
 <?php
 session_start();
 
-require_once 'db.php';
-require_once 'winner_functions.php';
-require_once 'draw_functions.php';
+// Database connection
+$host = 'localhost';
+$dbname = 'raffle';
+$username = 'root';
+$password = '';
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Database connection failed: ' . $e->getMessage()
+    ]);
+    exit;
+}
 
 header('Content-Type: application/json');
+
+// Helper function to normalize phone number
+function normalizePhoneNumber($phone) {
+    // Remove all non-digit characters
+    $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+    
+    // Remove leading 233 if present (Ghana country code)
+    if (strlen($cleanPhone) === 12 && substr($cleanPhone, 0, 3) === '233') {
+        $cleanPhone = substr($cleanPhone, 3);
+    }
+    
+    // Remove leading 0 if present
+    if (strlen($cleanPhone) === 10 && substr($cleanPhone, 0, 1) === '0') {
+        $cleanPhone = substr($cleanPhone, 1);
+    }
+    
+    return $cleanPhone;
+}
+
+// Helper function to get current draw week
+function getCurrentDrawWeek($pdo) {
+    $stmt = $pdo->prepare("
+        SELECT *, 
+        CASE 
+            WHEN date > NOW() THEN 'upcoming'
+            WHEN date <= NOW() AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 'active'
+            ELSE 'expired'
+        END as status
+        FROM draw_dates 
+        WHERE date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        ORDER BY date ASC 
+        LIMIT 1
+    ");
+    $stmt->execute();
+    $draw = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($draw) {
+        $drawDate = new DateTime($draw['date']);
+        $draw['formatted'] = $drawDate->format('F j, Y \a\t g:i A');
+        return $draw;
+    }
+    
+    return null;
+}
 
 // Get the action from the request
 $action = $_POST['action'] ?? '';
@@ -17,9 +74,6 @@ try {
             $phone = $_POST['phone'] ?? '';
             $email = $_POST['email'] ?? '';
             $password = $_POST['password'] ?? '';
-            $isAccountHolder = $_POST['is_account_holder'] ?? false;
-            $termsAgreement = $_POST['terms_agreement'] ?? false;
-            $privacyAgreement = $_POST['privacy_agreement'] ?? false;
             
             // Validate required fields
             if (empty($phone) || empty($email) || empty($password)) {
@@ -53,30 +107,15 @@ try {
                 'phone' => $phone,
                 'email' => $email,
                 'password' => $password, // In production, you should hash this
-                'is_account_holder' => $isAccountHolder,
-                'terms_agreement' => $termsAgreement,
-                'privacy_agreement' => $privacyAgreement,
                 'created_at' => date('Y-m-d H:i:s')
             ];
             
-            // Check if the phone number matches a winner
-            $pdo = connectDB();
-            $currentDraw = getCurrentDrawWeek($pdo);
-            
-            if (!$currentDraw) {
-                echo json_encode([
-                    'status' => 'error',
-                    'message' => 'No current draw week found'
-                ]);
-                exit;
-            }
-            
-            // Verify winner exists
+            // Check if the phone number matches any unclaimed winner
             $stmt = $pdo->prepare("
                 SELECT * FROM winners 
-                WHERE draw_week = ? AND phone = ? AND is_claimed = 0
+                WHERE phone = ? AND is_claimed = 0
             ");
-            $stmt->execute([$currentDraw['id'], $phone]);
+            $stmt->execute([$phone]);
             $winner = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if (!$winner) {
@@ -95,8 +134,7 @@ try {
                 'message' => 'Account created successfully',
                 'winner_info' => [
                     'name' => $winner['name'],
-                    'phone' => $winner['phone'],
-                    'draw_date' => $winner['draw_date']
+                    'phone' => $winner['phone']
                 ]
             ]);
             break;

@@ -16,7 +16,7 @@ const otpInput = document.getElementById("otp");
 const verifyOtpBtn = document.getElementById("verifyOtpBtn");
 const resendOtp = document.getElementById("resendOtp");
 const otpTimer = document.getElementById("otpTimer");
-const accountForm = document.getElementById("accountForm");
+const accountForm = document.getElementById("createAccountForm");
 const myClaimsPhoneForm = document.getElementById("myClaimsPhoneForm");
 const myClaimsPhoneInput = document.getElementById("myClaimsPhone");
 const claimsTableBody = document.getElementById("claimsTableBody");
@@ -662,6 +662,13 @@ function initAccountForm() {
     const phone =
       document.getElementById("accountPhone")?.value || phoneInput.value.trim();
 
+    console.log("Phone input value:", phoneInput.value);
+    console.log(
+      "AccountPhone field value:",
+      document.getElementById("accountPhone")?.value
+    );
+    console.log("Final phone value:", phone);
+
     // Validate form
     if (email && !email.includes("@")) {
       const errorMessage = document.getElementById("error-message");
@@ -713,6 +720,14 @@ function initAccountForm() {
     submitBtn.disabled = true;
     submitBtn.textContent = "Creating Account...";
 
+    console.log("Creating account with data:", {
+      phone: phone,
+      email: email,
+      isAccountHolder: isAccountHolder,
+      termsAgreement: termsAgreement,
+      privacyAgreement: privacyAgreement,
+    });
+
     try {
       // Send account data to API to store in session
       const response = await fetch("api_account.php", {
@@ -732,6 +747,7 @@ function initAccountForm() {
       });
 
       const result = await response.json();
+      console.log("Account creation response:", result);
 
       if (result.status === "success") {
         // Store account data locally for later use
@@ -741,11 +757,14 @@ function initAccountForm() {
           ...result.winner_info,
         };
 
+        console.log("About to show contract modal");
+
         // Hide current modal and show contract modal
         hideModal();
         showModal("contractModal");
       } else {
         // Show error message
+        console.error("Account creation failed:", result.message);
         const errorMessage = document.getElementById("error-message");
         errorMessage.textContent = result.message || "Failed to create account";
         showModal("errorModal");
@@ -1812,17 +1831,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Next button in phone verification
   document.getElementById("nextBtn").addEventListener("click", () => {
-    const phone = document.getElementById("phone").value;
-    const winner = findWinnerByPhone(phone);
+    const phone = phoneInput.value.trim();
 
-    if (winner) {
-      // Pre-fill the account creation form
-      document.getElementById("accountPhone").value = winner.phone;
+    // Set the phone number in the hidden field
+    document.getElementById("accountPhone").value = phone;
 
-      // Show the account creation modal
-      hideModal();
-      showModal("createAccountModal");
-    }
+    console.log("Moving to account creation with phone:", phone);
+
+    // Show the account creation modal
+    hideModal();
+    showModal("createAccountModal");
   });
 
   // Account creation form
