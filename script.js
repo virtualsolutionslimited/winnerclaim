@@ -160,6 +160,8 @@ let currentModal = null;
 let errorModal = null;
 
 function showModal(modalId) {
+  console.log("showModal called with modalId:", modalId);
+
   // Hide current modal if any
   if (currentModal) {
     currentModal.classList.remove("show");
@@ -167,9 +169,12 @@ function showModal(modalId) {
 
   // Show new modal
   currentModal = document.getElementById(modalId);
+  console.log("Found modal element:", currentModal);
+
   if (currentModal) {
     currentModal.classList.add("show");
     document.body.style.overflow = "hidden";
+    console.log("Modal shown successfully");
 
     // Re-initialize OTP flow if phone verification modal is shown
     if (modalId === "phoneVerificationModal") {
@@ -264,21 +269,28 @@ function showSummaryModal() {
     sessionStorage.getItem("claimSummaryData") || "{}"
   );
 
+  console.log("showSummaryModal called with claimData:", claimData);
+
   // Populate summary modal with data
-  document.getElementById("summary-phone").textContent =
-    claimData.phone || "N/A";
-  document.getElementById("summary-email").textContent =
-    claimData.email || "N/A";
-  document.getElementById("summary-account-holder").textContent =
-    claimData.isAccountHolder === "yes" ? "Yes" : "No";
-  document.getElementById("summary-winner-name").textContent =
-    claimData.winnerName || "N/A";
-  document.getElementById("summary-prize").textContent =
-    claimData.prizeName || "World Cup Experience";
-  document.getElementById("summary-claim-id").textContent =
-    claimData.claimId || "N/A";
-  document.getElementById("summary-submitted").textContent =
-    claimData.submittedAt
+  const summaryPhone = document.getElementById("summary-phone");
+  const summaryEmail = document.getElementById("summary-email");
+  const summaryAccountHolder = document.getElementById(
+    "summary-account-holder"
+  );
+  const summaryPrize = document.getElementById("summary-prize");
+  const summaryClaimId = document.getElementById("summary-claim-id");
+  const summarySubmitted = document.getElementById("summary-submitted");
+
+  if (summaryPhone) summaryPhone.textContent = claimData.phone || "N/A";
+  if (summaryEmail) summaryEmail.textContent = claimData.email || "N/A";
+  if (summaryAccountHolder)
+    summaryAccountHolder.textContent =
+      claimData.isAccountHolder === true ? "Yes" : "No";
+  if (summaryPrize)
+    summaryPrize.textContent = claimData.prizeName || "World Cup Experience";
+  if (summaryClaimId) summaryClaimId.textContent = claimData.claimId || "N/A";
+  if (summarySubmitted)
+    summarySubmitted.textContent = claimData.submittedAt
       ? new Date(claimData.submittedAt).toLocaleDateString() +
         " " +
         new Date(claimData.submittedAt).toLocaleTimeString([], {
@@ -286,6 +298,8 @@ function showSummaryModal() {
           minute: "2-digit",
         })
       : "N/A";
+
+  console.log("Summary modal elements populated, showing modal...");
 
   // Show the summary modal
   showModal("summaryModal");
@@ -1037,6 +1051,9 @@ function initKycForm() {
         const accountData = JSON.parse(
           sessionStorage.getItem("accountData") || "{}"
         );
+        console.log("Account data from storage:", accountData);
+        console.log("API result:", result);
+
         const claimSummaryData = {
           phone: accountData.phone,
           email: accountData.email,
@@ -1046,6 +1063,8 @@ function initKycForm() {
           claimId: result.claim_id,
           submittedAt: new Date().toISOString(),
         };
+
+        console.log("Storing claimSummaryData:", claimSummaryData);
         sessionStorage.setItem(
           "claimSummaryData",
           JSON.stringify(claimSummaryData)
@@ -1847,6 +1866,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Success modal actions
   document.getElementById("finishBtn").addEventListener("click", () => {
+    console.log(
+      "finishBtn clicked, hiding success modal and showing summary..."
+    );
     // Hide success modal and show summary modal
     hideModal();
     showSummaryModal();

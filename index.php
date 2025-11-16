@@ -768,9 +768,9 @@ if ($currentDraw) {
           </div>
         </div>
         
-        <div class="modal-actions">
+        <!-- <div class="modal-actions">
           <button class="primary-btn" onclick="hideModal()">Close</button>
-        </div>
+        </div> -->
       </div>
     </div>
 
