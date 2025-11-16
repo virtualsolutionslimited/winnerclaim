@@ -550,6 +550,54 @@ if ($currentDraw) {
                 </label>
               </div>
 
+              <!-- Age Verification Section -->
+              <div class="form-group">
+                <label>Select Your Age Range</label>
+                <div class="age-selection">
+                  <div class="radio-item">
+                    <input type="radio" id="ageBelow18" name="ageRange" value="below18" required />
+                    <label for="ageBelow18">Below 18</label>
+                  </div>
+                  <div class="radio-item">
+                    <input type="radio" id="age18to20" name="ageRange" value="18to20" required />
+                    <label for="age18to20">18 to 20</label>
+                  </div>
+                  <div class="radio-item">
+                    <input type="radio" id="ageAbove21" name="ageRange" value="above21" required />
+                    <label for="ageAbove21">Above 21</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Age Restriction Message -->
+              <div class="form-group" id="ageRestrictionMessage" style="display: none;">
+                <div class="error-message">
+                  You must be 18 years or older. Unfortunately, you are not eligible to proceed.
+                </div>
+              </div>
+
+              <!-- Parental Consent Section (for 18-20) -->
+              <div class="form-group" id="parentalConsentSection" style="display: none;">
+                <div class="contract-item">
+                  <input type="checkbox" id="parentalCheckbox" name="parentalConsent" class="term-checkbox" />
+                  <label for="parentalCheckbox">
+                    I confirm I have parental/guardian consent to enter into this contract.
+                  </label>
+                </div>
+                
+                <div class="guardian-details">
+                  <h4>Guardian Contact Details</h4>
+                  <div class="form-group">
+                    <label for="guardianName">Guardian Name</label>
+                    <input type="text" id="guardianName" name="guardianName" placeholder="Enter guardian's full name" />
+                  </div>
+                  <div class="form-group">
+                    <label for="guardianPhone">Guardian Phone</label>
+                    <input type="tel" id="guardianPhone" name="guardianPhone" placeholder="Enter guardian's phone number" />
+                  </div>
+                </div>
+              </div>
+
               <div class="form-group" id="parentalConsent" style="display: none;">
                 <input type="checkbox" id="parentalCheckbox" name="parentalConsent" class="term-checkbox">
                 <label for="parentalCheckbox">

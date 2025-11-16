@@ -815,6 +815,112 @@ function initContractForm() {
     });
   });
 
+  // Age selection handlers
+  const ageRadios = document.querySelectorAll('input[name="ageRange"]');
+  const ageRestrictionMessage = document.getElementById(
+    "ageRestrictionMessage"
+  );
+  const parentalConsentSection = document.getElementById(
+    "parentalConsentSection"
+  );
+
+  ageRadios.forEach((radio) => {
+    radio.addEventListener("change", function () {
+      // Hide all conditional sections first
+      ageRestrictionMessage.style.display = "none";
+      parentalConsentSection.style.display = "none";
+
+      // Reset parental consent checkbox
+      const parentalCheckbox = document.getElementById("parentalCheckbox");
+      if (parentalCheckbox) {
+        parentalCheckbox.checked = false;
+      }
+
+      // Show appropriate section based on age selection
+      if (this.value === "below18") {
+        ageRestrictionMessage.style.display = "block";
+        acceptButton.disabled = true;
+      } else if (this.value === "18to20") {
+        parentalConsentSection.style.display = "block";
+        checkAllTermsAccepted(); // Re-check to validate parental consent
+      } else if (this.value === "above21") {
+        // Just enable validation check
+        checkAllTermsAccepted();
+      }
+    });
+  });
+
+  // Update checkAllTermsAccepted to include age validation
+  function checkAllTermsAccepted() {
+    const selectedAge = document.querySelector(
+      'input[name="ageRange"]:checked'
+    );
+
+    // If no age selected, disable button
+    if (!selectedAge) {
+      acceptButton.disabled = true;
+      return false;
+    }
+
+    // If under 18, disable button
+    if (selectedAge.value === "below18") {
+      acceptButton.disabled = true;
+      return false;
+    }
+
+    // Get all required checkboxes (terms + parental consent if applicable)
+    const requiredCheckboxes = [];
+    termCheckboxes.forEach((checkbox) => {
+      // Only include terms checkboxes, not old parental consent
+      if (
+        checkbox.id !== "parentalCheckbox" ||
+        (selectedAge.value === "18to20" && checkbox.id === "parentalCheckbox")
+      ) {
+        requiredCheckboxes.push(checkbox);
+      }
+    });
+
+    // Check if all required checkboxes are checked
+    const allChecked = Array.from(requiredCheckboxes).every(
+      (checkbox) => checkbox.checked
+    );
+
+    // Also validate guardian details if 18-20 age range
+    let guardianDetailsValid = true;
+    if (selectedAge.value === "18to20") {
+      const guardianName = document.getElementById("guardianName");
+      const guardianPhone = document.getElementById("guardianPhone");
+      const parentalCheckbox = document.getElementById("parentalCheckbox");
+
+      if (parentalCheckbox && parentalCheckbox.checked) {
+        guardianDetailsValid =
+          guardianName.value.trim() !== "" && guardianPhone.value.trim() !== "";
+      } else {
+        guardianDetailsValid = false;
+      }
+    }
+
+    acceptButton.disabled = !(allChecked && guardianDetailsValid);
+    return allChecked && guardianDetailsValid;
+  }
+
+  // Add event listeners for guardian details inputs
+  const guardianNameInput = document.getElementById("guardianName");
+  const guardianPhoneInput = document.getElementById("guardianPhone");
+  const parentalCheckbox = document.getElementById("parentalCheckbox");
+
+  if (guardianNameInput) {
+    guardianNameInput.addEventListener("input", checkAllTermsAccepted);
+  }
+
+  if (guardianPhoneInput) {
+    guardianPhoneInput.addEventListener("input", checkAllTermsAccepted);
+  }
+
+  if (parentalCheckbox) {
+    parentalCheckbox.addEventListener("change", checkAllTermsAccepted);
+  }
+
   // Handle form submission
   contractForm.addEventListener("submit", (e) => {
     e.preventDefault();
