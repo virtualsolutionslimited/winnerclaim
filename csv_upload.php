@@ -109,10 +109,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_sms'])) {
     $successCount = 0;
     $failCount = 0;
     
+    // Get draw date to calculate claim deadline (5 days after)
+    try {
+        $stmt = $pdo->prepare("SELECT draw_date FROM draw_dates WHERE id = ?");
+        $stmt->execute([$drawWeek]);
+        $drawDate = $stmt->fetchColumn();
+        
+        if ($drawDate) {
+            $drawDateTime = new DateTime($drawDate);
+            $claimDeadline = clone $drawDateTime;
+            $claimDeadline->add(new DateInterval('P5D')); // Add 5 days
+            $claimDate = $claimDeadline->format('M j, Y'); // Format like "Nov 21, 2025"
+        } else {
+            $claimDate = "5 days from now"; // Fallback
+        }
+    } catch (Exception $e) {
+        $claimDate = "5 days from now"; // Fallback on error
+    }
+    
     foreach ($phoneNumbers as $phone) {
         try {
-            // Send congratulatory SMS
-            $message = "Congratulations! You have been selected as a winner. Please proceed with the claim process.";
+            // Send congratulatory SMS with dynamic date
+            $message = "Congrats! You're a provisional winner of the Ghana World Cup Experience. Claim your prize here: www.raffle.com#claim BEFORE $claimDate.\nAny Questions? Call 0241111111.";
             $result = sendSMS($phone, $message);
             
             if ($result) {
