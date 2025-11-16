@@ -861,13 +861,18 @@ function initKycForm() {
   const kycForm = document.getElementById("kycForm");
   const ghanaCardInput = document.getElementById("ghanaCard");
   const fileInput = document.getElementById("fileInput");
-  const previewImage = document.getElementById("previewImage");
-  const uploadPreview = document.getElementById("uploadPreview");
-  const uploadPlaceholder = document.getElementById("uploadPlaceholder");
-  const retakeBtn = document.getElementById("retakeBtn");
+  const selfieInput = document.getElementById("selfieInput");
+
+  // New preview elements
+  const selfiePreview = document.getElementById("selfiePreview");
+  const selfiePreviewImage = document.getElementById("selfiePreviewImage");
+  const cardPreview = document.getElementById("cardPreview");
+  const cardPreviewImage = document.getElementById("cardPreviewImage");
+  const retakeSelfieBtn = document.getElementById("retakeSelfieBtn");
+  const retakeCardBtn = document.getElementById("retakeCardBtn");
+
   const submitKycBtn = document.getElementById("submitKycBtn");
   const backBtn = kycForm?.querySelector(".back-btn");
-  const selfieInput = document.getElementById("selfieInput");
 
   // Initially disable submit button
   if (submitKycBtn) {
@@ -879,20 +884,19 @@ function initKycForm() {
     ghanaCardInput.addEventListener("input", (e) => {
       let value = e.target.value.replace(/\D/g, "");
       if (value.length > 9) {
-        value = value.slice(0, 9) + "-" + value[9];
+        value = value.slice(0, 9) + "-" + value.slice(9, 10);
       }
       e.target.value = value;
       validateKycForm();
     });
   }
 
-  // Handle file input change
+  // Handle card input change
   if (fileInput) {
     fileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (file) {
-        capturedImage = file;
-        displayImagePreview(file);
+        displayCardPreview(file);
       }
     });
   }
@@ -902,16 +906,21 @@ function initKycForm() {
     selfieInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (file) {
-        capturedImage = file;
-        displayImagePreview(file);
+        displaySelfiePreview(file);
       }
     });
   }
 
-  // Handle retake photo
-  if (retakeBtn) {
-    retakeBtn.addEventListener("click", () => {
-      resetImagePreview();
+  // Handle retake photo buttons
+  if (retakeSelfieBtn) {
+    retakeSelfieBtn.addEventListener("click", () => {
+      resetSelfiePreview();
+    });
+  }
+
+  if (retakeCardBtn) {
+    retakeCardBtn.addEventListener("click", () => {
+      resetCardPreview();
     });
   }
 
@@ -925,46 +934,55 @@ function initKycForm() {
 
   // Validate form
   function validateKycForm() {
-    if (!ghanaCardInput || !submitKycBtn) return true;
+    const ghanaCard = ghanaCardInput?.value.trim() || "";
+    const hasSelfie = selfieInput?.files && selfieInput.files.length > 0;
+    const hasGhanaCard = fileInput?.files && fileInput.files.length > 0;
 
-    const isGhanaCardValid = ghanaCardInput.validity.valid;
-    const hasSelfie =
-      selfieInput && selfieInput.files && selfieInput.files.length > 0;
-    const hasGhanaCard =
-      fileInput && fileInput.files && fileInput.files.length > 0;
+    const isGhanaCardValid = /^\d{9}-[0-9A-Z]$/i.test(ghanaCard);
+    const isValid = isGhanaCardValid && hasSelfie && hasGhanaCard;
 
-    // Enable submit button only if Ghana card is valid AND at least one photo is uploaded
-    submitKycBtn.disabled = !(isGhanaCardValid && (hasSelfie || hasGhanaCard));
+    if (submitKycBtn) {
+      submitKycBtn.disabled = !isValid;
+    }
 
-    return isGhanaCardValid && (hasSelfie || hasGhanaCard);
+    return isValid;
   }
 
-  // Display image preview
-  function displayImagePreview(file) {
+  // Display selfie preview
+  function displaySelfiePreview(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      previewImage.src = e.target.result;
-      uploadPreview.style.display = "block";
+      selfiePreviewImage.src = e.target.result;
+      selfiePreview.style.display = "block";
       validateKycForm();
     };
     reader.readAsDataURL(file);
   }
 
-  // Reset image preview
-  function resetImagePreview() {
-    const uploadPreview = document.getElementById("uploadPreview");
-    const previewImage = document.getElementById("previewImage");
-    const fileInput = document.getElementById("fileInput");
-    const selfieInput = document.getElementById("selfieInput");
-    const previewActions = document.getElementById("previewActions");
+  // Display card preview
+  function displayCardPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      cardPreviewImage.src = e.target.result;
+      cardPreview.style.display = "block";
+      validateKycForm();
+    };
+    reader.readAsDataURL(file);
+  }
 
-    if (uploadPreview) uploadPreview.style.display = "none";
-    if (previewImage) previewImage.src = "";
-    if (fileInput) fileInput.value = "";
+  // Reset selfie preview
+  function resetSelfiePreview() {
+    if (selfiePreview) selfiePreview.style.display = "none";
+    if (selfiePreviewImage) selfiePreviewImage.src = "";
     if (selfieInput) selfieInput.value = "";
-    if (previewActions) previewActions.style.display = "none";
+    validateKycForm();
+  }
 
-    capturedImage = null;
+  // Reset card preview
+  function resetCardPreview() {
+    if (cardPreview) cardPreview.style.display = "none";
+    if (cardPreviewImage) cardPreviewImage.src = "";
+    if (fileInput) fileInput.value = "";
     validateKycForm();
   }
 

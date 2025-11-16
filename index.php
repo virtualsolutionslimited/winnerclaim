@@ -566,11 +566,41 @@ if ($currentDraw) {
           
           <div class="form-group">
             <label>Upload Your Photo</label>
+            <div class="upload-preview" id="selfiePreview" style="display: none;">
+              <div class="preview-container">
+                <img id="selfiePreviewImage" alt="Selfie Preview" class="preview-img">
+                <div class="preview-actions">
+                  <button type="button" class="btn retake-btn" id="retakeSelfieBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="1 4 1 10 7 10"></polyline>
+                      <polyline points="23 20 23 14 17 14"></polyline>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                    </svg>
+                    Retake
+                  </button>
+                </div>
+              </div>
+            </div>
             <input type="file" id="selfieInput" accept="image/*" class="form-control">
           </div>
           
           <div class="form-group">
             <label>Upload Ghana Card Photo</label>
+            <div class="upload-preview" id="cardPreview" style="display: none;">
+              <div class="preview-container">
+                <img id="cardPreviewImage" alt="Ghana Card Preview" class="preview-img">
+                <div class="preview-actions">
+                  <button type="button" class="btn retake-btn" id="retakeCardBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="1 4 1 10 7 10"></polyline>
+                      <polyline points="23 20 23 14 17 14"></polyline>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                    </svg>
+                    Retake
+                  </button>
+                </div>
+              </div>
+            </div>
             <input type="file" id="fileInput" accept="image/*" class="form-control">
           </div>
             
@@ -588,23 +618,6 @@ if ($currentDraw) {
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </button>
-          </div>
-            
-            <div class="upload-preview" id="uploadPreview" style="display: none;">
-              <div class="preview-container">
-                <img id="previewImage" alt="Preview" class="preview-img">
-                <div class="preview-actions" id="previewActions" style="display: none;">
-                  <button type="button" class="btn retake-btn" id="retakeBtn">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="1 4 1 10 7 10"></polyline>
-                      <polyline points="23 20 23 14 17 14"></polyline>
-                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
-                    </svg>
-                    Retake
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </form>
       </div>
@@ -691,10 +704,10 @@ if ($currentDraw) {
           <div class="summary-section">
             <h3>Personal Information</h3>
             <div class="summary-grid">
-              <div class="summary-item">
+              <!-- <div class="summary-item">
                 <label>Name:</label>
                 <span id="summary-winner-name"></span>
-              </div>
+              </div> -->
               <div class="summary-item">
                 <label>Phone:</label>
                 <span id="summary-phone"></span>
