@@ -343,7 +343,7 @@ async function handleSendOtp() {
 
   // Disable button and show loading
   sendOtpBtn.disabled = true;
-  sendOtpBtn.innerHTML = '<span style="opacity: 0.7;">Verifying...</span>';
+  sendOtpBtn.innerHTML = "Verify...";
 
   try {
     const response = await fetch("api_otp.php", {
@@ -369,9 +369,7 @@ async function handleSendOtp() {
         }
       }
 
-      // Change button to "Send OTP" and directly send OTP
-      sendOtpBtn.innerHTML = "Send OTP";
-      sendOtpBtn.disabled = false;
+      // Change button click handler and directly send OTP
       sendOtpBtn.onclick = handleSendOtpAfterVerification;
 
       // Automatically trigger OTP sending
@@ -545,7 +543,7 @@ async function handleSendOtpAfterVerification() {
 
   // Disable button and show loading
   sendOtpBtn.disabled = true;
-  sendOtpBtn.innerHTML = '<span style="opacity: 0.7;">Sending...</span>';
+  sendOtpBtn.innerHTML = "Verify...";
 
   try {
     const response = await fetch("api_otp.php", {
