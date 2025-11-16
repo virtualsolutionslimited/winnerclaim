@@ -578,7 +578,7 @@ if ($currentDraw) {
 
               <!-- Parental Consent Section (for 18-20) -->
               <div class="form-group" id="parentalConsentSection" style="display: none;">
-                <div class="contract-item">
+                <div class="contract-item" style="display: flex !important; align-items: start !important; justify-content: start !important;">
                   <input type="checkbox" id="parentalCheckbox" name="parentalConsent" class="term-checkbox" />
                   <label for="parentalCheckbox">
                     I confirm I have parental/guardian consent to enter into this contract.
@@ -596,13 +596,6 @@ if ($currentDraw) {
                     <input type="tel" id="guardianPhone" name="guardianPhone" placeholder="Enter guardian's phone number" />
                   </div>
                 </div>
-              </div>
-
-              <div class="form-group" id="parentalConsent" style="display: none;">
-                <input type="checkbox" id="parentalCheckbox" name="parentalConsent" class="term-checkbox">
-                <label for="parentalCheckbox">
-                  I confirm I have parental or guardian consent to enter into this contract.
-                </label>
               </div>
             </div>
 
@@ -787,10 +780,10 @@ if ($currentDraw) {
           <div class="summary-section">
             <h3>Personal Information</h3>
             <div class="summary-grid">
-              <!-- <div class="summary-item">
+              <div class="summary-item">
                 <label>Name:</label>
                 <span id="summary-winner-name"></span>
-              </div> -->
+              </div>
               <div class="summary-item">
                 <label>Phone:</label>
                 <span id="summary-phone"></span>
@@ -802,6 +795,24 @@ if ($currentDraw) {
               <div class="summary-item">
                 <label>Account Holder:</label>
                 <span id="summary-account-holder"></span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="summary-section">
+            <h3>Photo Previews</h3>
+            <div class="photo-previews">
+              <div class="photo-preview-item">
+                <label>Your Photo:</label>
+                <div class="photo-preview-container">
+                  <img id="summary-selfie-preview" src="" alt="Selfie Photo" style="max-width: 150px; max-height: 150px; border-radius: 8px; border: 1px solid #ddd;">
+                </div>
+              </div>
+              <div class="photo-preview-item">
+                <label>Ghana Card:</label>
+                <div class="photo-preview-container">
+                  <img id="summary-ghana-card-preview" src="" alt="Ghana Card" style="max-width: 150px; max-height: 150px; border-radius: 8px; border: 1px solid #ddd;">
+                </div>
               </div>
             </div>
           </div>

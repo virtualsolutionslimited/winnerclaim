@@ -181,8 +181,12 @@ function showModal(modalId) {
       const accountTitle = document.getElementById("accountTitle");
       const winnerInfo = window.currentWinner || currentUser;
 
-      if (accountTitle && winnerInfo && winnerInfo.name) {
-        accountTitle.textContent = `Hi ${winnerInfo.name}. You are a winner! Create Your Account`;
+      if (accountTitle) {
+        if (winnerInfo && winnerInfo.name) {
+          accountTitle.textContent = `Hi ${winnerInfo.name}. You are a winner! Create Your Account`;
+        } else {
+          accountTitle.textContent = `Hi there. You are a winner! Create Your Account`;
+        }
       }
     }
 
@@ -281,7 +285,11 @@ function showSummaryModal() {
 
   console.log("showSummaryModal called with claimData:", claimData);
 
+  // Get winner info for name
+  const winnerInfo = window.currentWinner || currentUser;
+
   // Populate summary modal with data
+  const summaryName = document.getElementById("summary-winner-name");
   const summaryPhone = document.getElementById("summary-phone");
   const summaryEmail = document.getElementById("summary-email");
   const summaryAccountHolder = document.getElementById(
@@ -291,6 +299,19 @@ function showSummaryModal() {
   const summaryClaimId = document.getElementById("summary-claim-id");
   const summarySubmitted = document.getElementById("summary-submitted");
 
+  // Photo preview elements
+  const summarySelfiePreview = document.getElementById(
+    "summary-selfie-preview"
+  );
+  const summaryGhanaCardPreview = document.getElementById(
+    "summary-ghana-card-preview"
+  );
+
+  // Populate personal information
+  if (summaryName) {
+    summaryName.textContent =
+      winnerInfo && winnerInfo.name ? winnerInfo.name : "Hi there";
+  }
   if (summaryPhone) summaryPhone.textContent = claimData.phone || "N/A";
   if (summaryEmail) summaryEmail.textContent = claimData.email || "N/A";
   if (summaryAccountHolder)
@@ -308,6 +329,27 @@ function showSummaryModal() {
           minute: "2-digit",
         })
       : "N/A";
+
+  // Populate photo previews
+  if (summarySelfiePreview) {
+    if (claimData.photo) {
+      summarySelfiePreview.src = claimData.photo;
+      summarySelfiePreview.style.display = "block";
+    } else {
+      summarySelfiePreview.src = "";
+      summarySelfiePreview.style.display = "none";
+    }
+  }
+
+  if (summaryGhanaCardPreview) {
+    if (claimData.ghanacard_photo) {
+      summaryGhanaCardPreview.src = claimData.ghanacard_photo;
+      summaryGhanaCardPreview.style.display = "block";
+    } else {
+      summaryGhanaCardPreview.src = "";
+      summaryGhanaCardPreview.style.display = "none";
+    }
+  }
 
   console.log("Summary modal elements populated, showing modal...");
 
@@ -830,6 +872,14 @@ function initContractForm() {
 
   ageRadios.forEach((radio) => {
     radio.addEventListener("change", function () {
+      // Update custom styling
+      document.querySelectorAll(".radio-item").forEach((item) => {
+        item.classList.remove("selected");
+      });
+      if (this.checked) {
+        this.closest(".radio-item").classList.add("selected");
+      }
+
       // Hide all conditional sections first
       ageRestrictionMessage.style.display = "none";
       parentalConsentSection.style.display = "none";
@@ -852,6 +902,18 @@ function initContractForm() {
         checkAllTermsAccepted();
       }
     });
+
+    // Add click handler to the entire radio item
+    const radioItem = radio.closest(".radio-item");
+    if (radioItem) {
+      radioItem.addEventListener("click", function (e) {
+        // Don't trigger if clicking on the radio input itself
+        if (e.target !== radio) {
+          radio.checked = true;
+          radio.dispatchEvent(new Event("change"));
+        }
+      });
+    }
   });
 
   // Update checkAllTermsAccepted to include age validation

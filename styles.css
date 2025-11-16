@@ -1812,43 +1812,75 @@ p {
   line-height: 1.5;
 }
 
-/* Age Selection Styles */
+/* Age Selection Styles - Custom Design */
 .age-selection {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   margin-top: 10px;
 }
 
 .radio-item {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  border: 1px solid #ddd;
+  position: relative;
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
+  padding: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .radio-item:hover {
-  border-color: #fcd115;
+  border-color: rgba(252, 209, 21, 0.3);
   background: rgba(252, 209, 21, 0.05);
 }
 
+.radio-item.selected {
+  border-color: #fcd115;
+  background: rgba(252, 209, 21, 0.1);
+}
+
 .radio-item input[type="radio"] {
-  margin-right: 10px;
-  margin-top: 0;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .radio-item label {
+  display: block;
   margin: 0;
   cursor: pointer;
-  color: var(--text-primary);
+  color: var(--text-secondary);
+  font-size: 15px;
   font-weight: 500;
+  transition: color 0.3s ease;
 }
 
-.radio-item input[type="radio"]:checked + label {
+.radio-item.selected label {
   color: #fcd115;
+}
+
+/* Custom radio indicator */
+.radio-item::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.radio-item.selected::before {
+  border-color: #fcd115;
+  background: #fcd115;
+  box-shadow: inset 0 0 0 4px #170742;
+}
+
+.radio-item label {
+  padding-left: 35px;
 }
 
 /* Guardian Details Styles */
@@ -2016,6 +2048,40 @@ p {
   margin-bottom: 0.75rem;
   font-size: 1rem;
   font-weight: 600;
+}
+
+/* Photo Previews Styling */
+.photo-previews {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.photo-preview-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.photo-preview-item label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.photo-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.photo-preview-container img {
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .summary-grid {
