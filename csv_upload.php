@@ -91,17 +91,8 @@ if (isset($_GET['download_template'])) {
     // Add BOM for proper UTF-8 encoding in Excel
     fwrite($output, "\xEF\xBB\xBF");
     
-    // Write headers
+    // Write headers only - no sample data
     fwrite($output, "Name,Phone\n");
-    
-    // Add sample data with leading apostrophe to force text format in Excel
-    // The apostrophe tells Excel to treat the value as text, not a number
-    fwrite($output, "John Doe,'0201234567\n");
-    fwrite($output, "Jane Smith,'0507654321\n");
-    fwrite($output, "Mike Johnson,'0548664851\n");
-    fwrite($output, "Sarah Williams,'0241234567\n");
-    fwrite($output, "David Brown,'233548664851\n");  // Example with 233 prefix
-    fwrite($output, "Emma Davis,'548664851\n");       // Example 9-digit number
     
     fclose($output);
     exit;
