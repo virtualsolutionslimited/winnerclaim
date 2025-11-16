@@ -1715,11 +1715,26 @@ document.addEventListener("DOMContentLoaded", () => {
     showModal("myClaimsPhoneModal");
   });
 
-  // Back button handlers
+  // Back button handlers - only trigger for actual button clicks
   document.querySelectorAll(".back-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
+      e.stopPropagation();
+
+      // Only proceed if this is actually a button element being clicked
+      // and not a file input or other form element
+      if (e.target.tagName !== "BUTTON" && !e.target.closest("button")) {
+        return;
+      }
+
+      // Additional safety check: ensure we're not clicking on input elements
+      if (e.target.tagName === "INPUT" || e.target.closest("input, label")) {
+        return;
+      }
+
       const currentStep = e.target.closest(".modal").id;
+      if (!currentStep) return; // Safety check
+
       // Add logic to handle back navigation between steps
       if (currentStep === "createAccountModal") {
         showModal("phoneVerificationModal");

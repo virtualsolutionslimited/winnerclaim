@@ -574,6 +574,22 @@ if ($currentDraw) {
             <input type="file" id="fileInput" accept="image/*" class="form-control">
           </div>
             
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline back-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              Back
+            </button>
+            <button type="submit" id="submitKycBtn" class="btn btn-primary submit-btn">
+              Submit Verification
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </button>
+          </div>
+            
             <div class="upload-preview" id="uploadPreview" style="display: none;">
               <div class="preview-container">
                 <img id="previewImage" alt="Preview" class="preview-img">
@@ -589,23 +605,6 @@ if ($currentDraw) {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn btn-outline back-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-              </svg>
-              Back
-            </button>
-            <button type="submit" id="submitKycBtn" class="btn btn-primary submit-btn">
-              Submit Verification
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1">
-                <path d="5 12h14"></path>
-                <path d="12 5l7 7-7 7"></path>
-              </svg>
-            </button>
           </div>
         </form>
       </div>
