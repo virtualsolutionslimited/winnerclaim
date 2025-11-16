@@ -170,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_sms'])) {
     foreach ($phoneNumbers as $phone) {
         try {
             // Send congratulatory SMS with dynamic date
-            $message = "Congrats! You're a provisional winner of the Ghana World Cup Experience. Claim your prize here: https://playrambell.com/claim BEFORE $claimDate.\nAny Questions? Call 0241111111.";
+            $message = "Congrats! You're a provisional winner of the WorldCup Bonanza. Claim your prize here: https://playrambell.com/claim BEFORE $claimDate.\nAny Questions? Call 0303912407.";
             $result = sendSMS($phone, $message);
             
             if ($result) {

@@ -110,11 +110,14 @@ body {
 
 /* Steps Container */
 .steps-container {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: var(--spacing-md);
   margin: var(--spacing-xl) 0;
-  text-align: center;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .step {
@@ -124,6 +127,10 @@ body {
   transition: transform var(--transition-normal),
     box-shadow var(--transition-normal);
   border: 1px solid var(--border-color);
+  flex: 1;
+  min-width: 200px;
+  max-width: 220px;
+  text-align: center;
 }
 
 .step:hover {
@@ -145,7 +152,7 @@ body {
 }
 
 .step-content {
-  text-align: left;
+  text-align: center;
 }
 
 .step-content h3 {
@@ -475,8 +482,34 @@ p {
 
   .otp-digit {
     width: 40px;
-    height: 45px;
-    font-size: 1.2rem;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  /* Steps responsive */
+  .steps-container {
+    gap: var(--spacing-sm);
+    margin: var(--spacing-lg) 0;
+  }
+
+  .step {
+    min-width: 160px;
+    max-width: 180px;
+    padding: var(--spacing-md);
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+
+  .step-content h3 {
+    font-size: 1rem;
+  }
+
+  .step-content p {
+    font-size: 0.85rem;
   }
 
   #myClaimsPhoneModal .modal-header h2 {
@@ -1086,6 +1119,49 @@ p {
   .modal-content {
     margin: 20px auto;
     width: calc(100% - 20px);
+  }
+
+  /* Steps responsive for small mobile */
+  .steps-container {
+    gap: var(--spacing-xs);
+    margin: var(--spacing-md) 0;
+  }
+
+  .step {
+    min-width: 140px;
+    max-width: 160px;
+    padding: var(--spacing-sm);
+  }
+
+  .step-number {
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .step-content h3 {
+    font-size: 0.9rem;
+    margin: 0 0 4px 0;
+  }
+
+  .step-content p {
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+  .steps-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .step {
+    width: 100%;
+    max-width: 280px;
+    min-width: auto;
   }
 }
 
