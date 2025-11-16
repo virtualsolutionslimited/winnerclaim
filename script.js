@@ -235,17 +235,32 @@ function initOtpFlow() {
 // Handle Send OTP
 async function handleSendOtp() {
   const phone = phoneInput.value.trim();
+  const sendOtpBtn = document.getElementById("sendOtpBtn");
+  const originalText = sendOtpBtn.innerHTML;
 
-  if (!phone) {
-    const errorMessage = document.getElementById("error-message");
-    errorMessage.textContent = "Please enter your MoMo account number";
+  // Validate phone number
+  if (
+    !phone ||
+    (phone.length !== 9 && phone.length !== 10) ||
+    !/^\d+$/.test(phone)
+  ) {
+    const errorMessageElement = document.getElementById("error-message");
+    if (errorMessageElement) {
+      errorMessageElement.textContent =
+        "Please enter a valid 9-digit or 10-digit MoMo number";
+    }
     showModal("errorModal");
     return;
   }
 
-  // Disable button while processing
+  // Debug logging
+  console.log("Sending verification for phone:", phone);
+  console.log("Phone length:", phone.length);
+  console.log("Phone is numeric:", /^\d+$/.test(phone));
+
+  // Disable button and show loading
   sendOtpBtn.disabled = true;
-  sendOtpBtn.textContent = "Sending...";
+  sendOtpBtn.innerHTML = '<span style="opacity: 0.7;">Verifying...</span>';
 
   try {
     const response = await fetch("api_otp.php", {
@@ -253,46 +268,128 @@ async function handleSendOtp() {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: new URLSearchParams({
-        action: "send_otp",
-        phone: phone,
-      }),
+      body: `action=verify&phone=${encodeURIComponent(phone)}`,
     });
 
     const result = await response.json();
 
+    // Debug logging
+    console.log("API Response:", result);
+    console.log("Response status:", response.status);
+
     if (result.status === "success") {
-      // Store winner info for later use
-      currentUser = result.winner_info;
+      // Found unclaimed winner - show winner details
+      if (result.winner_info) {
+        window.currentWinner = result.winner_info;
 
-      // Show success message
-      const successMessage = document.getElementById("success-message");
-      successMessage.textContent = result.message;
-      showModal("successModal");
+        // Show winner details in one line
+        const winnerDetails = `
+          <div style="background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #28a745; font-size: 14px;">
+            <span style="color: #155724;">🏆 Unclaimed Prize Found! | Name: ${
+              result.winner_info.name
+            } | Draw Date: ${new Date(
+          result.winner_info.draw_date
+        ).toLocaleDateString()} | Days Since Win: ${
+          result.winner_info.days_since_win
+        } days</span>
+          </div>
+        `;
 
-      // Show OTP input and start countdown
-      document.getElementById("otpSection").style.display = "block";
-      startOtpCountdown();
+        // Insert winner details after the phone input section
+        const phoneSection = document.querySelector(".modal-content");
+        const existingDetails = phoneSection.querySelector(".winner-details");
+        if (existingDetails) {
+          existingDetails.remove();
+        }
 
-      // Focus on first OTP input
-      const firstOtpInput = document.querySelector(".otp-digit");
-      if (firstOtpInput) {
-        firstOtpInput.focus();
+        const detailsDiv = document.createElement("div");
+        detailsDiv.className = "winner-details";
+        detailsDiv.innerHTML = winnerDetails;
+
+        // Insert after the phone input field
+        const phoneField = phoneInput.closest(".form-group");
+        phoneField.parentNode.insertBefore(detailsDiv, phoneField.nextSibling);
       }
+
+      // Change button to "Send OTP" and directly send OTP
+      sendOtpBtn.innerHTML = "Send OTP";
+      sendOtpBtn.disabled = false;
+      sendOtpBtn.onclick = handleSendOtpAfterVerification;
+
+      // Automatically trigger OTP sending
+      handleSendOtpAfterVerification();
+    } else if (result.status === "not_found") {
+      // Show not found message
+      const errorMessageElement = document.getElementById("error-message");
+      if (errorMessageElement) {
+        errorMessageElement.textContent =
+          "No unclaimed winnings found for this phone number";
+        result.message || "No unclaimed winnings found for this phone number";
+      }
+      showModal("errorModal");
+
+      // Show "no winnings found" message with helpful info
+      const noWinningsMsg = `
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107;">
+          <h4 style="margin: 0 0 10px 0; color: #856404;"> No Unclaimed Winnings Found</h4>
+          <p style="margin: 0; color: #856404;">
+            This phone number doesn't have any unclaimed winnings in the current draw week.<br>
+            Please check:<br>
+            • The phone number matches the winning SMS<br>
+            • You're checking the current draw week<br>
+            • The prize hasn't been claimed yet
+          </p>
+        </div>
+      `;
+
+      // Show no winnings message
+      const phoneSection = document.querySelector(".modal-content");
+      const existingMsg = phoneSection.querySelector(".no-winnings-message");
+      if (existingMsg) {
+        existingMsg.remove();
+      }
+
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "no-winnings-message";
+      msgDiv.innerHTML = noWinningsMsg;
+
+      const phoneField = phoneInput.closest(".form-group");
+      phoneField.parentNode.insertBefore(msgDiv, phoneField.nextSibling);
+
+      // Remove message after 5 seconds
+      setTimeout(() => {
+        if (msgDiv.parentNode) {
+          msgDiv.remove();
+        }
+      }, 5000);
     } else {
-      const errorMessage = document.getElementById("error-message");
-      errorMessage.textContent = result.message;
+      // Show error message with specific details
+      const errorMessage = result.message || "Failed to verify phone number";
+      console.error("API Error:", errorMessage);
+
+      // Set the error message in the modal
+      const errorModalElement = document.getElementById("errorModal");
+      const errorMessageElement = document.getElementById("error-message");
+      if (errorMessageElement) {
+        errorMessageElement.textContent = errorMessage;
+      }
+
       showModal("errorModal");
     }
   } catch (error) {
-    console.error("Error sending OTP:", error);
-    const errorMessage = document.getElementById("error-message");
-    errorMessage.textContent = "Network error. Please try again.";
+    console.error("Error verifying phone:", error);
+
+    // Set the error message in the modal
+    const errorMessageElement = document.getElementById("error-message");
+    if (errorMessageElement) {
+      errorMessageElement.textContent = "Network error. Please try again.";
+    }
+
     showModal("errorModal");
   } finally {
     // Re-enable button
     sendOtpBtn.disabled = false;
-    sendOtpBtn.textContent = "Send OTP";
+    sendOtpBtn.textContent = "Verify";
   }
 }
 
@@ -398,6 +495,62 @@ async function handleVerifyOtp() {
     const errorMessage = document.getElementById("error-message");
     errorMessage.textContent = "Network error. Please try again.";
     showModal("errorModal");
+  }
+}
+
+// Handle Send OTP After Verification
+async function handleSendOtpAfterVerification() {
+  const phone = phoneInput.value.trim();
+  const sendOtpBtn = document.getElementById("sendOtpBtn");
+
+  // Disable button and show loading
+  sendOtpBtn.disabled = true;
+  sendOtpBtn.innerHTML = '<span style="opacity: 0.7;">Sending...</span>';
+
+  try {
+    const response = await fetch("api_otp.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `action=send_otp&phone=${encodeURIComponent(phone)}`,
+    });
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      // Show OTP input section
+      otpSection.style.display = "block";
+
+      // Enable verify OTP button
+      verifyOtpBtn.disabled = false;
+
+      // Focus on OTP input
+      setTimeout(() => otpInput.focus(), 500);
+
+      // Update button to show it was sent
+      sendOtpBtn.innerHTML = "✓ OTP Sent";
+      sendOtpBtn.disabled = true;
+      sendOtpBtn.style.backgroundColor = "#4CAF50";
+      sendOtpBtn.style.color = "white";
+    } else {
+      // Show error message
+      showModal(
+        "errorModal",
+        result.message || "Failed to send verification code"
+      );
+
+      // Re-enable button for retry
+      sendOtpBtn.disabled = false;
+      sendOtpBtn.innerHTML = "Send OTP";
+    }
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    showModal("errorModal", "Network error. Please try again.");
+
+    // Re-enable button for retry
+    sendOtpBtn.disabled = false;
+    sendOtpBtn.innerHTML = "Send OTP";
   }
 }
 

@@ -309,7 +309,7 @@ if ($currentDraw) {
                 required
               />
               <button type="button" id="sendOtpBtn" class="otp-btn">
-                Send OTP
+                Verify
               </button>
             </div>
             <small class="form-hint">Enter your 9-digit MoMo number without the leading 0</small>
