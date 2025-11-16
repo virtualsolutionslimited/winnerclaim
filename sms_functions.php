@@ -157,12 +157,14 @@ function updateWinnerOTP($phoneNumber, $code) {
         }
         
         // Update OTP for winner in current draw week
+        // Note: Database stores phone numbers with leading 0, so we need to check both formats
         $stmt = $pdo->prepare("
             UPDATE winners 
             SET otp = ? 
             WHERE draw_week = ? AND (
                 phone = ? OR
                 phone = ? OR
+                phone = CONCAT('0', ?) OR
                 REPLACE(phone, ' ', '') = ? OR
                 REPLACE(phone, '-', '') = ? OR
                 REPLACE(phone, '(', '') = ?
@@ -171,7 +173,8 @@ function updateWinnerOTP($phoneNumber, $code) {
         
         $searchPatterns = [
             $phoneNumber,                           // Original input
-            $cleanPhone,                           // Cleaned with country code
+            $cleanPhone,                           // Cleaned without leading 0
+            $cleanPhone,                           // Cleaned with leading 0 added back
             $phoneNumber,                           // Original without spaces
             $phoneNumber,                           // Original without dashes
             $phoneNumber                            // Original without parentheses
@@ -189,6 +192,7 @@ function updateWinnerOTP($phoneNumber, $code) {
                 WHERE draw_week = ? AND (
                     phone = ? OR
                     phone = ? OR
+                    phone = CONCAT('0', ?) OR
                     REPLACE(phone, ' ', '') = ? OR
                     REPLACE(phone, '-', '') = ? OR
                     REPLACE(phone, '(', '') = ?
@@ -239,11 +243,13 @@ function verifyOTPCode($phoneNumber, $code) {
         }
         
         // Check OTP in winners table for current week
+        // Note: Database stores phone numbers with leading 0, so we need to check both formats
         $stmt = $pdo->prepare("
             SELECT * FROM winners 
             WHERE draw_week = ? AND otp = ? AND (
                 phone = ? OR
                 phone = ? OR
+                phone = CONCAT('0', ?) OR
                 REPLACE(phone, ' ', '') = ? OR
                 REPLACE(phone, '-', '') = ? OR
                 REPLACE(phone, '(', '') = ?
@@ -252,7 +258,8 @@ function verifyOTPCode($phoneNumber, $code) {
         
         $searchPatterns = [
             $phoneNumber,                           // Original input
-            $cleanPhone,                           // Cleaned with country code
+            $cleanPhone,                           // Cleaned without leading 0
+            $cleanPhone,                           // Cleaned with leading 0 added back
             $phoneNumber,                           // Original without spaces
             $phoneNumber,                           // Original without dashes
             $phoneNumber                            // Original without parentheses

@@ -169,6 +169,53 @@ function showModal(modalId) {
   if (currentModal) {
     currentModal.classList.add("show");
     document.body.style.overflow = "hidden";
+
+    // Re-initialize OTP flow if phone verification modal is shown
+    if (modalId === "phoneVerificationModal") {
+      // Re-add event listeners for OTP inputs
+      const otpInputs = currentModal.querySelectorAll(".otp-digit");
+      otpInputs.forEach((input, index) => {
+        // Remove existing listeners to avoid duplicates
+        input.replaceWith(input.cloneNode(true));
+      });
+
+      // Re-add event listeners
+      const newOtpInputs = currentModal.querySelectorAll(".otp-digit");
+      newOtpInputs.forEach((input, index) => {
+        // Handle input
+        input.addEventListener("input", (e) => {
+          // Only allow numbers
+          e.target.value = e.target.value.replace(/[^0-9]/g, "");
+
+          // Move to next input if current input has a value
+          if (e.target.value && index < newOtpInputs.length - 1) {
+            newOtpInputs[index + 1].focus();
+          }
+
+          // Enable/disable verify button based on OTP completion
+          const allFilled = Array.from(newOtpInputs).every(
+            (input) => input.value
+          );
+          const verifyBtn = currentModal.querySelector("#verifyOtpBtn");
+          if (verifyBtn) {
+            verifyBtn.disabled = !allFilled;
+          }
+        });
+
+        // Handle backspace
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Backspace" && !e.target.value && index > 0) {
+            newOtpInputs[index - 1].focus();
+          }
+        });
+      });
+
+      // Add verify button event listener
+      const verifyBtn = currentModal.querySelector("#verifyOtpBtn");
+      if (verifyBtn) {
+        verifyBtn.addEventListener("click", handleVerifyOtp);
+      }
+    }
   }
 }
 
@@ -204,32 +251,6 @@ function initOtpFlow() {
   if (resendOtp) {
     resendOtp.addEventListener("click", handleResendOtp);
   }
-
-  // Add event listeners for OTP input fields
-  const otpInputs = document.querySelectorAll(".otp-digit");
-  otpInputs.forEach((input, index) => {
-    // Handle input
-    input.addEventListener("input", (e) => {
-      // Only allow numbers
-      e.target.value = e.target.value.replace(/[^0-9]/g, "");
-
-      // Move to next input if current input has a value
-      if (e.target.value && index < otpInputs.length - 1) {
-        otpInputs[index + 1].focus();
-      }
-
-      // Enable/disable verify button based on OTP completion
-      const allFilled = Array.from(otpInputs).every((input) => input.value);
-      verifyOtpBtn.disabled = !allFilled;
-    });
-
-    // Handle backspace
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Backspace" && !e.target.value && index > 0) {
-        otpInputs[index - 1].focus();
-      }
-    });
-  });
 }
 
 // Handle Send OTP
@@ -253,11 +274,6 @@ async function handleSendOtp() {
     return;
   }
 
-  // Debug logging
-  console.log("Sending verification for phone:", phone);
-  console.log("Phone length:", phone.length);
-  console.log("Phone is numeric:", /^\d+$/.test(phone));
-
   // Disable button and show loading
   sendOtpBtn.disabled = true;
   sendOtpBtn.innerHTML = '<span style="opacity: 0.7;">Verifying...</span>';
@@ -273,10 +289,6 @@ async function handleSendOtp() {
 
     const result = await response.json();
 
-    // Debug logging
-    console.log("API Response:", result);
-    console.log("Response status:", response.status);
-
     if (result.status === "success") {
       // Found unclaimed winner - show winner details
       if (result.winner_info) {
@@ -285,7 +297,7 @@ async function handleSendOtp() {
         // Show winner details in one line
         const winnerDetails = `
           <div style="background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #28a745; font-size: 14px;">
-            <span style="color: #155724;">🏆 Unclaimed Prize Found! | Name: ${
+            <span style="color: #155724;"> Unclaimed Prize Found! | Name: ${
               result.winner_info.name
             } | Draw Date: ${new Date(
           result.winner_info.draw_date
@@ -365,10 +377,6 @@ async function handleSendOtp() {
     } else {
       // Show error message with specific details
       const errorMessage = result.message || "Failed to verify phone number";
-      console.error("API Error:", errorMessage);
-
-      // Set the error message in the modal
-      const errorModalElement = document.getElementById("errorModal");
       const errorMessageElement = document.getElementById("error-message");
       if (errorMessageElement) {
         errorMessageElement.textContent = errorMessage;
@@ -377,9 +385,6 @@ async function handleSendOtp() {
       showModal("errorModal");
     }
   } catch (error) {
-    console.error("Error verifying phone:", error);
-
-    // Set the error message in the modal
     const errorMessageElement = document.getElementById("error-message");
     if (errorMessageElement) {
       errorMessageElement.textContent = "Network error. Please try again.";
@@ -395,6 +400,9 @@ async function handleSendOtp() {
 
 // Handle Verify OTP
 async function handleVerifyOtp() {
+  // Get phone number from input field
+  const phone = phoneInput.value.trim();
+
   // Get all OTP input fields
   const otpInputs = document.querySelectorAll(".otp-digit");
   let enteredOtp = "";
@@ -412,9 +420,6 @@ async function handleVerifyOtp() {
     showModal("errorModal");
     return;
   }
-
-  // Get the phone number from the input
-  const phone = phoneInput.value.trim();
 
   if (!phone) {
     const errorMessage = document.getElementById("error-message");
@@ -444,7 +449,7 @@ async function handleVerifyOtp() {
 
     if (result.status === "success" && result.verified) {
       // Update verify button to show success
-      verifyOtpBtn.textContent = "✓ Verified";
+      verifyOtpBtn.textContent = "Verified";
       verifyOtpBtn.style.backgroundColor = "#4CAF50";
       verifyOtpBtn.style.color = "white";
       verifyOtpBtn.style.borderColor = "#4CAF50";
@@ -457,14 +462,11 @@ async function handleVerifyOtp() {
 
       // Enable continue button with brand yellow background and deep blue text
       const nextBtn = document.getElementById("nextBtn");
-      nextBtn.disabled = false;
-      nextBtn.style.backgroundColor = "var(--primary-color)"; // Brand yellow
-      nextBtn.style.color = "#170742"; // Deep blue text
-
-      // Show success message
-      const successMessage = document.getElementById("success-message");
-      successMessage.textContent = "Phone number verified successfully!";
-      showModal("successModal");
+      if (nextBtn) {
+        nextBtn.disabled = false;
+        nextBtn.style.backgroundColor = "var(--primary-color)"; // Brand yellow
+        nextBtn.style.color = "#170742"; // Deep blue text
+      }
     } else {
       // Reset verify button
       verifyOtpBtn.disabled = false;
@@ -1728,7 +1730,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Phone verification form
   const phoneForm = document.getElementById("phoneVerificationForm");
   const sendOtpBtn = document.getElementById("sendOtpBtn");
-  const verifyOtpBtn = document.getElementById("verifyOtpBtn");
   const otpSection = document.getElementById("otpSection");
   const otpInput = document.getElementById("otp");
   const otpTimer = document.getElementById("otpTimer");
@@ -1736,35 +1737,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let otpCountdown;
   let otpTimeLeft = 120; // 2 minutes in seconds
-
-  // Verify OTP
-  verifyOtpBtn.addEventListener("click", () => {
-    // Get all OTP input fields and combine them
-    const otpInputs = document.querySelectorAll(".otp-digit");
-    let otp = "";
-    otpInputs.forEach((input) => {
-      otp += input.value || "";
-    });
-
-    // In a real app, you would verify the OTP here
-    // For demo purposes, we'll accept any 6-digit code
-    if (otp.length === 6 && /^\d+$/.test(otp)) {
-      clearInterval(otpCountdown);
-
-      // Update verify button to show success
-      verifyOtpBtn.textContent = "✓ Verified";
-      verifyOtpBtn.style.backgroundColor = "#4CAF50";
-      verifyOtpBtn.style.color = "white";
-      verifyOtpBtn.style.borderColor = "#4CAF50";
-      verifyOtpBtn.disabled = true;
-
-      // Enable continue button with brand yellow background and deep blue text
-      const nextBtn = document.getElementById("nextBtn");
-      nextBtn.disabled = false;
-      nextBtn.style.backgroundColor = "var(--primary-color)"; // Brand yellow
-      nextBtn.style.color = "#170742"; // Deep blue text
-    }
-  });
 
   // Next button in phone verification
   document.getElementById("nextBtn").addEventListener("click", () => {
