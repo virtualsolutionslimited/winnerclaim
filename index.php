@@ -676,7 +676,7 @@ if ($currentDraw) {
         <h2>Sorry</h2>
         <p id="error-message"></p>
         <div class="modal-actions">
-          <button class="ok-btn" onclick="hideModal()">OK</button>
+          <button class="ok-btn" id="errorModalOkBtn">OK</button>
         </div>
       </div>
     </div>
@@ -690,49 +690,67 @@ if ($currentDraw) {
         <div class="summary-content">
           <div class="summary-section">
             <h3>Personal Information</h3>
-            <div class="summary-item">
-              <label>Phone:</label>
-              <span id="summary-phone"></span>
-            </div>
-            <div class="summary-item">
-              <label>Email:</label>
-              <span id="summary-email"></span>
-            </div>
-            <div class="summary-item">
-              <label>Account Holder:</label>
-              <span id="summary-account-holder"></span>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <label>Name:</label>
+                <span id="summary-winner-name"></span>
+              </div>
+              <div class="summary-item">
+                <label>Phone:</label>
+                <span id="summary-phone"></span>
+              </div>
+              <div class="summary-item">
+                <label>Email:</label>
+                <span id="summary-email"></span>
+              </div>
+              <div class="summary-item">
+                <label>Account Holder:</label>
+                <span id="summary-account-holder"></span>
+              </div>
             </div>
           </div>
           
           <div class="summary-section">
+            <h3>Claim Details</h3>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <label>Claim ID:</label>
+                <span id="summary-claim-id"></span>
+              </div>
+              <div class="summary-item">
+                <label>Prize:</label>
+                <span id="summary-prize"></span>
+              </div>
+              <div class="summary-item">
+                <label>Submitted:</label>
+                <span id="summary-submitted"></span>
+              </div>
+              <div class="summary-item">
+                <label>Status:</label>
+                <span class="status-processing">Processing</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="summary-section compact">
             <h3>Verification Status</h3>
-            <div class="summary-item">
-              <label>Ghana Card:</label>
-              <span id="summary-ghana-card">✅ Uploaded</span>
-            </div>
-            <div class="summary-item">
-              <label>Selfie Photo:</label>
-              <span id="summary-selfie">✅ Uploaded</span>
-            </div>
-            <div class="summary-item">
-              <label>Terms Agreement:</label>
-              <span id="summary-terms">✅ Accepted</span>
-            </div>
-            <div class="summary-item">
-              <label>Privacy Agreement:</label>
-              <span id="summary-privacy">✅ Accepted</span>
-            </div>
-          </div>
-          
-          <div class="summary-section">
-            <h3>Prize Details</h3>
-            <div class="summary-item">
-              <label>Prize:</label>
-              <span>World Cup Experience</span>
-            </div>
-            <div class="summary-item">
-              <label>Status:</label>
-              <span class="status-processing">Processing</span>
+            <div class="verification-grid">
+              <div class="verification-item">
+                <span class="check-icon">✅</span>
+                <span>Ghana Card</span>
+              </div>
+              <div class="verification-item">
+                <span class="check-icon">✅</span>
+                <span>Selfie Photo</span>
+              </div>
+              <div class="verification-item">
+                <span class="check-icon">✅</span>
+                <span>Terms Agreement</span>
+              </div>
+              <div class="verification-item">
+                <span class="check-icon">✅</span>
+                <span>Privacy Agreement</span>
+              </div>
             </div>
           </div>
         </div>
