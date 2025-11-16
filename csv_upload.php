@@ -80,6 +80,8 @@ try {
 $message = '';
 $error = '';
 $uploadedCount = 0;
+$uploadedWinners = []; // Store uploaded winners for display
+
 if (isset($_GET['download_template'])) {
     // Create a CSV template with Excel text formatting instructions
     header('Content-Type: text/csv');
@@ -96,6 +98,35 @@ if (isset($_GET['download_template'])) {
     
     fclose($output);
     exit;
+}
+
+// Handle SMS sending
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_sms'])) {
+    require_once 'sms_functions.php';
+    
+    $phoneNumbers = $_POST['phone_numbers'];
+    $drawWeek = $_POST['draw_week'];
+    $successCount = 0;
+    $failCount = 0;
+    
+    foreach ($phoneNumbers as $phone) {
+        try {
+            // Send congratulatory SMS
+            $message = "Congratulations! You have been selected as a winner. Please proceed with the claim process.";
+            $result = sendSMS($phone, $message);
+            
+            if ($result) {
+                $successCount++;
+            } else {
+                $failCount++;
+            }
+        } catch (Exception $e) {
+            $failCount++;
+            error_log("SMS failed for $phone: " . $e->getMessage());
+        }
+    }
+    
+    $message = "SMS sending completed: $successCount sent successfully, $failCount failed";
 }
 
 // Handle file upload
@@ -211,6 +242,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                     'name' => $name,
                     'phone' => $normalizedPhone,
                     'draw_week' => $drawWeekId
+                ];
+                
+                // Store for display
+                $uploadedWinners[] = [
+                    'name' => $name,
+                    'phone' => $normalizedPhone,
+                    'row' => $rowNumber
                 ];
                 
             } catch (PDOException $e) {
@@ -446,6 +484,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             color: #667eea;
         }
         
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .upload-btn:hover::before {
+            left: 100%;
+        }
+        
+        .upload-btn:active {
+            transform: translateY(0);
+        }
+        
         .submit-btn {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
@@ -554,6 +635,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             font-size: 13px;
         }
         
+        .results-summary {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .winners-table {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        .winners-table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .winners-table th,
+        .winners-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .winners-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .winners-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .sms-form {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .sms-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .sms-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.3);
+        }
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 2rem;
@@ -588,60 +730,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         <div class="card">
             <h2 class="section-title">📥 Download CSV Template</h2>
             
-            <div class="template-info">
-                <h3>Template Information</h3>
-                <ul>
-                    <li><strong>Column A:</strong> Name (Required)</li>
-                    <li><strong>Column B:</strong> Phone (Required)</li>
-                    <li>Template includes sample data in rows 2-3</li>
-                    <li>Replace sample data with your actual winner data</li>
-                    <li>Keep the header row (Row 1) unchanged</li>
-                </ul>
-            </div>
-            
-            <div class="excel-note">
-                <h4>📋 Excel Compatible</h4>
-                <p>This CSV file will open directly in Excel and can be edited like a regular Excel spreadsheet. When you save, choose "CSV (Comma delimited)" format.</p>
-            </div>
-            
             <a href="?download_template=1" class="download-btn">
                 📥 Download Winners Template
             </a>
         </div>
-        
         <!-- Upload Section -->
         <div class="card">
-            <h2 class="section-title">📤 Upload Winners Data</h2>
-            
-            <div class="instructions">
-                <h4>Instructions:</h4>
-                <ol>
-                    <li>Download and open the CSV template in Excel</li>
-                    <li>The template has phone numbers pre-formatted as text to prevent scientific notation</li>
-                    <li>Fill the template with winner data (Name and Phone columns)</li>
-                    <li><strong>Phone formats accepted:</strong> 548664851, 233548664851, 0201234567, etc.</li>
-                    <li>Save the file as CSV format in Excel</li>
-                    <li>Select the saved CSV file below and upload</li>
-                    <li>System will validate and normalize phone numbers automatically</li>
-                </ol>
-                
-                <div class="phone-format-note">
-                    <h5>📱 Phone Number Formatting:</h5>
-                    <ul>
-                        <li><strong>9-digit numbers:</strong> 548664851 → 0548664851</li>
-                        <li><strong>233 prefix:</strong> 233548664851 → 0548664851</li>
-                        <li><strong>Already formatted:</strong> 0201234567 → 0201234567</li>
-                        <li><strong>Excel scientific notation:</strong> 2.33E+11 → 0548664851</li>
-                    </ul>
-                </div>
-                
-                <?php if (empty($upcomingDraws)): ?>
-                    <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
-                        <strong>⚠️ No Draw Weeks Available</strong><br>
-                        The draw dates table appears to be empty. Please <a href="run_seeder.php" style="color: #667eea; font-weight: bold;">run the draw dates seeder</a> first to populate upcoming draw weeks.
-                    </div>
-                <?php endif; ?>
-            </div>
+            <h2 class="section-title"> Upload Winners Data</h2>
             
             <form action="" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
                 <div class="form-group">
@@ -657,22 +752,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                                 </option>
                                 <?php endif; ?>
                             <?php endforeach; ?>
-                        <?php else: ?>
-                            <option value="">No upcoming draws available</option>
                         <?php endif; ?>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="csv_file">Choose CSV file:</label>
-                    <input type="file" name="csv_file" id="csv_file" accept=".csv" required>
+                    <label for="csv_file">Choose CSV File:</label>
+                    <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
                 </div>
                 
-                <button type="submit" class="submit-btn">
-                    🚀 Upload Winners Data
+                <button type="submit" class="upload-btn">
+                     Upload Winners
                 </button>
             </form>
         </div>
+        
+        <?php if (!empty($uploadedWinners)): ?>
+        <!-- Upload Results Section -->
+        <div class="card">
+            <h2 class="section-title">📋 Uploaded Winners</h2>
+            
+            <div class="results-summary">
+                <p><strong>Total uploaded:</strong> <?php echo count($uploadedWinners); ?> winners</p>
+            </div>
+            
+            <div class="winners-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Row</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($uploadedWinners as $winner): ?>
+                        <tr>
+                            <td><?php echo $winner['row']; ?></td>
+                            <td><?php echo htmlspecialchars($winner['name']); ?></td>
+                            <td><?php echo htmlspecialchars($winner['phone']); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            
+            <form action="" method="post" class="sms-form">
+                <input type="hidden" name="draw_week" value="<?php echo htmlspecialchars($_POST['draw_week'] ?? ''); ?>">
+                <?php foreach ($uploadedWinners as $winner): ?>
+                <input type="hidden" name="phone_numbers[]" value="<?php echo htmlspecialchars($winner['phone']); ?>">
+                <?php endforeach; ?>
+                
+                <button type="submit" name="send_sms" class="sms-btn" onclick="return confirm('Send congratulatory SMS to all uploaded winners?')">
+                    📱 Send Congratulatory Message
+                </button>
+            </form>
+        </div>
+        <?php endif; ?>
     </div>
     
     <script>
