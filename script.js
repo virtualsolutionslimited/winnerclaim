@@ -1069,6 +1069,12 @@ function initModals() {
       const modal = e.target.closest(".modal");
       if (modal) {
         hideModal(modal.id);
+        // Refresh page if closing success modal
+        if (modal.id === "successModal") {
+          setTimeout(() => {
+            window.location.reload();
+          }, 300);
+        }
       } else {
         hideModal();
       }
