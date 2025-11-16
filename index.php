@@ -490,7 +490,7 @@ if ($currentDraw) {
               <div class="contract-item">
                 <input type="checkbox" id="term2" name="terms" class="term-checkbox" required />
                 <label for="term2">
-                  I understand my prize is a fully sponsored Ghana World Cup Experience, which includes return flights (Accra–America–Accra), accommodation of up to 3 weeks, match tickets for Ghana's group-stage games, and full visa fee payment with document coaching.
+                  I understand my prize is a fully sponsored Ghana World Cup Experience, which includes subsidised return flights (Accra–Mexico–Accra), accommodation of up to 3 weeks, match tickets for Ghana's group-stage games, and full visa fee payment with document coaching.
                 </label>
               </div>
 
@@ -502,16 +502,51 @@ if ($currentDraw) {
               </div>
 
               <div class="contract-item">
-                <input type="checkbox" id="termsAgreement" name="termsAgreement" class="term-checkbox" required />
-                <label for="termsAgreement">
-                  I have read and agree to the <a href="#" target="_blank" style="color: #fcd115 !important;">Terms & Conditions</a>.
+                <input type="checkbox" id="term4" name="terms" class="term-checkbox" required />
+                <label for="term4">
+                  I accept that the prize and all related benefits are strictly non-transferable and non-exchangeable for cash or any other benefit.
                 </label>
               </div>
 
               <div class="contract-item">
-                <input type="checkbox" id="privacyAgreement" name="privacyAgreement" class="term-checkbox" required />
-                <label for="privacyAgreement">
-                  I have read and agree to the <a href="#" target="_blank" style="color: #fcd115 !important;">Privacy and Data Statement</a>.
+                <input type="checkbox" id="term5" name="terms" class="term-checkbox" required />
+                <label for="term5">
+                  I will abide by all instructions and codes of conduct set by the Organizers (Rambell Enterprise Ltd, the National Lottery Authority (NLA), and the Ghana Football Association (GFA)).
+                </label>
+              </div>
+
+              <div class="contract-item">
+                <input type="checkbox" id="term6" name="terms" class="term-checkbox" required />
+                <label for="term6">
+                  I understand that any act of vandalism, disorderly behaviour, or breach of host-country laws will make me personally liable for damages, fines, or penalties.
+                </label>
+              </div>
+
+              <div class="contract-item">
+                <input type="checkbox" id="term7" name="terms" class="term-checkbox" required />
+                <label for="term7">
+                  I consent to the use of my name, image, and likeness in campaign publicity and confirm that my personal data may be processed under Ghana's Data Protection Act (2012) for travel, compliance, and campaign purposes only.
+                </label>
+              </div>
+
+              <div class="contract-item">
+                <input type="checkbox" id="term8" name="terms" class="term-checkbox" required />
+                <label for="term8">
+                  I acknowledge that basic group travel insurance will be provided for emergencies, luggage loss, or trip interruption, and that the Organizer shall not be liable for losses beyond that coverage.
+                </label>
+              </div>
+
+              <div class="contract-item">
+                <input type="checkbox" id="term9" name="terms" class="term-checkbox" required />
+                <label for="term9">
+                  I understand that failure to complete all claim and verification steps (including KYC and document submission) within the stated deadlines will result in forfeiture and replacement by an alternate winner.
+                </label>
+              </div>
+
+              <div class="contract-item">
+                <input type="checkbox" id="term10" name="terms" class="term-checkbox" required />
+                <label for="term10">
+                  I agree that this contract is governed by the laws of the Republic of Ghana.
                 </label>
               </div>
 
