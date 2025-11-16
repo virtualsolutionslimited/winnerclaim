@@ -357,37 +357,16 @@ async function handleSendOtp() {
     const result = await response.json();
 
     if (result.status === "success") {
-      // Found unclaimed winner - show winner details
+      // Found unclaimed winner - store winner info but don't display details
       if (result.winner_info) {
         window.currentWinner = result.winner_info;
 
-        // Show winner details in one line
-        const winnerDetails = `
-          <div style="background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #28a745; font-size: 14px;">
-            <span style="color: #155724;"> Unclaimed Prize Found! | Name: ${
-              result.winner_info.name
-            } | Draw Date: ${new Date(
-          result.winner_info.draw_date
-        ).toLocaleDateString()} | Days Since Win: ${
-          result.winner_info.days_since_win
-        } days</span>
-          </div>
-        `;
-
-        // Insert winner details after the phone input section
+        // Remove any existing winner details display
         const phoneSection = document.querySelector(".modal-content");
         const existingDetails = phoneSection.querySelector(".winner-details");
         if (existingDetails) {
           existingDetails.remove();
         }
-
-        const detailsDiv = document.createElement("div");
-        detailsDiv.className = "winner-details";
-        detailsDiv.innerHTML = winnerDetails;
-
-        // Insert after the phone input field
-        const phoneField = phoneInput.closest(".form-group");
-        phoneField.parentNode.insertBefore(detailsDiv, phoneField.nextSibling);
       }
 
       // Change button to "Send OTP" and directly send OTP
