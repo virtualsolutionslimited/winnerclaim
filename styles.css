@@ -1332,6 +1332,119 @@ p {
   background: rgba(255, 87, 34, 0.1);
 }
 
+/* Custom Checkbox Styles */
+.custom-checkbox-container {
+  margin-left: 0;
+  padding-left: 0;
+  width: 100%;
+}
+
+.custom-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.custom-checkbox-label:hover {
+  color: var(--primary-color);
+}
+
+.custom-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.custom-checkbox-checkmark {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  margin-right: 12px;
+  margin-top: 2px;
+  transition: all 0.3s ease;
+  background: transparent;
+}
+
+.custom-checkbox-checkmark::after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 12px;
+  border: solid var(--primary-color);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  transition: all 0.3s ease;
+}
+
+.custom-checkbox-input:checked ~ .custom-checkbox-checkmark {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(252, 209, 21, 0.1);
+}
+
+.custom-checkbox-input:checked ~ .custom-checkbox-checkmark::after {
+  display: block;
+}
+
+.custom-checkbox-input:checked ~ .custom-checkbox-text {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.custom-checkbox-text {
+  flex: 1;
+  transition: color 0.3s ease;
+}
+
+/* Animation for checkmark */
+.custom-checkbox-checkmark {
+  animation: checkboxPulse 0.3s ease;
+}
+
+@keyframes checkboxPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.custom-checkbox-input:checked ~ .custom-checkbox-checkmark {
+  animation: checkboxCheck 0.3s ease;
+}
+
+@keyframes checkboxCheck {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 /* Links in forms */
 .form-checkbox a {
   color: var(--primary-color);

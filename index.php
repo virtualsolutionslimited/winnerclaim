@@ -578,10 +578,13 @@ if ($currentDraw) {
 
               <!-- Parental Consent Section (for 18-20) -->
               <div class="form-group" id="parentalConsentSection" style="display: none;">
-                <div class="contract-item" style="display: flex !important; align-items: start !important; justify-content: start !important;">
-                  <input type="checkbox" id="parentalCheckbox" name="parentalConsent" class="term-checkbox" />
-                  <label for="parentalCheckbox">
-                    I confirm I have parental/guardian consent to enter into this contract.
+                <div class="custom-checkbox-container">
+                  <label class="custom-checkbox-label" for="parentalCheckbox">
+                    <input type="checkbox" id="parentalCheckbox" name="parentalConsent" class="custom-checkbox-input" />
+                    <span class="custom-checkbox-checkmark"></span>
+                    <span class="custom-checkbox-text">
+                      I confirm I have parental/guardian consent to enter into this contract.
+                    </span>
                   </label>
                 </div>
                 
