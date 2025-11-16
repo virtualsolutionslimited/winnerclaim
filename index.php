@@ -490,7 +490,7 @@ if ($currentDraw) {
               <div class="contract-item">
                 <input type="checkbox" id="term2" name="terms" class="term-checkbox" required />
                 <label for="term2">
-                  I understand my prize is a fully sponsored Ghana World Cup Experience, which includes subsidized return flights (Accra–Mexico–Accra), accommodation of up to 3 weeks, match tickets for Ghana's group-stage games, and full visa fee payment with document coaching.
+                  I understand my prize is a fully sponsored Ghana World Cup Experience, which includes return flights (Accra–Mexico–Accra), accommodation of up to 3 weeks, match tickets for Ghana's group-stage games, and full visa fee payment with document coaching.
                 </label>
               </div>
 
