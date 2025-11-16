@@ -121,10 +121,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_sms'])) {
             $claimDeadline->add(new DateInterval('P5D')); // Add 5 days
             $claimDate = $claimDeadline->format('M j, Y'); // Format like "Nov 21, 2025"
         } else {
-            $claimDate = "5 days from now"; // Fallback
+            // Fallback: get next draw date + 5 days
+            $stmt = $pdo->prepare("SELECT draw_date FROM draw_dates WHERE draw_date >= CURDATE() ORDER BY draw_date ASC LIMIT 1");
+            $stmt->execute();
+            $nextDrawDate = $stmt->fetchColumn();
+            
+            if ($nextDrawDate) {
+                $nextDrawDateTime = new DateTime($nextDrawDate);
+                $claimDeadline = clone $nextDrawDateTime;
+                $claimDeadline->add(new DateInterval('P5D')); // Add 5 days
+                $claimDate = $claimDeadline->format('M j, Y');
+            } else {
+                // If no future draw dates, use current date + 5 days
+                $currentDate = new DateTime();
+                $claimDeadline = clone $currentDate;
+                $claimDeadline->add(new DateInterval('P5D')); // Add 5 days
+                $claimDate = $claimDeadline->format('M j, Y');
+            }
         }
     } catch (Exception $e) {
-        $claimDate = "5 days from now"; // Fallback on error
+        // Fallback: get next draw date + 5 days on error
+        try {
+            $stmt = $pdo->prepare("SELECT draw_date FROM draw_dates WHERE draw_date >= CURDATE() ORDER BY draw_date ASC LIMIT 1");
+            $stmt->execute();
+            $nextDrawDate = $stmt->fetchColumn();
+            
+            if ($nextDrawDate) {
+                $nextDrawDateTime = new DateTime($nextDrawDate);
+                $claimDeadline = clone $nextDrawDateTime;
+                $claimDeadline->add(new DateInterval('P5D')); // Add 5 days
+                $claimDate = $claimDeadline->format('M j, Y');
+            } else {
+                // If no future draw dates, use current date + 5 days
+                $currentDate = new DateTime();
+                $claimDeadline = clone $currentDate;
+                $claimDeadline->add(new DateInterval('P5D')); // Add 5 days
+                $claimDate = $claimDeadline->format('M j, Y');
+            }
+        } catch (Exception $e2) {
+            // Final fallback: current date + 5 days
+            $currentDate = new DateTime();
+            $claimDeadline = clone $currentDate;
+            $claimDeadline->add(new DateInterval('P5D')); // Add 5 days
+            $claimDate = $claimDeadline->format('M j, Y');
+        }
     }
     
     foreach ($phoneNumbers as $phone) {
