@@ -2,6 +2,51 @@
 require_once 'db.php';
 require_once 'draw_functions.php';
 
+/**
+ * Normalize phone number for CSV upload
+ * - If 9 digits and doesn't start with 0, add 0 at the beginning
+ * - If starts with 233, replace with 0
+ * - Handle Excel scientific notation (e.g., 2.33549E+11 -> 233549000000)
+ * - Handle Excel truncated numbers (e.g., 2.34E+11 -> 234000000000)
+ * @param string $phone The phone number to normalize
+ * @return string The normalized phone number
+ */
+function normalizePhoneForUpload($phone) {
+    // Handle Excel scientific notation first
+    if (stripos($phone, 'E') !== false || stripos($phone, 'e') !== false) {
+        // Convert scientific notation to regular number
+        $phone = number_format(floatval($phone), 0, '.', '');
+        
+        // Check if this looks like an Excel-truncated Ghana number
+        // Excel often rounds 233XXXXXXXXX to 2.34E+11 (234000000000)
+        if (strlen($phone) === 12 && substr($phone, 0, 3) === '234') {
+            // This is likely a truncated Ghana number, replace 234 with 0
+            return '0' . substr($phone, 3);
+        }
+    }
+    
+    // Remove any non-digit characters
+    $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+    
+    // If starts with 233, replace with 0
+    if (strlen($cleanPhone) >= 12 && substr($cleanPhone, 0, 3) === '233') {
+        return '0' . substr($cleanPhone, 3);
+    }
+    
+    // If exactly 9 digits and doesn't start with 0, add 0 at the beginning
+    if (strlen($cleanPhone) === 9 && substr($cleanPhone, 0, 1) !== '0') {
+        return '0' . $cleanPhone;
+    }
+    
+    // If starts with 0 and has correct length (10 digits), return as is
+    if (strlen($cleanPhone) === 10 && substr($cleanPhone, 0, 1) === '0') {
+        return $cleanPhone;
+    }
+    
+    // Return original if no normalization needed
+    return $phone;
+}
+
 // Get upcoming draws for dropdown
 $upcomingDraws = [];
 try {
@@ -19,10 +64,13 @@ try {
         $now = new DateTime();
         foreach ($allDraws as $draw) {
             $drawDate = new DateTime($draw['date']);
-            $upcomingDraws[] = formatDrawInfo($draw, $drawDate, $now);
+            // Only include current and future draws, not past ones
+            if ($drawDate >= $now) {
+                $upcomingDraws[] = formatDrawInfo($draw, $drawDate, $now);
+            }
         }
         
-        error_log("Fallback found " . count($upcomingDraws) . " total draws");
+        error_log("Fallback found " . count($upcomingDraws) . " upcoming draws (excluding past)");
     }
     
 } catch (Exception $e) {
@@ -145,16 +193,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                     continue;
                 }
                 
-                // Validate phone format (basic validation)
-                if (!preg_match('/^[0-9+\s()-]+$/', $phone)) {
-                    $errors[] = "Row $rowNumber: Invalid phone format for '$phone'";
+                // Normalize phone number first
+                $normalizedPhone = normalizePhoneForUpload($phone);
+                
+                // Log normalization for debugging
+                error_log("Row $rowNumber: Phone normalized from '$phone' to '$normalizedPhone'");
+                
+                // Validate phone format (basic validation) - use normalized phone
+                if (!preg_match('/^[0-9+\s()-]+$/', $normalizedPhone)) {
+                    $errors[] = "Row $rowNumber: Invalid phone format for '$phone' (normalized to '$normalizedPhone')";
+                    continue;
+                }
+                
+                // Check for Excel-truncated numbers (all zeros after prefix)
+                if (preg_match('/^0{10}$/', $normalizedPhone)) {
+                    $errors[] = "Row $rowNumber: Excel truncated number '$phone' - please format phone column as text in Excel";
                     continue;
                 }
                 
                 // Add to batch with draw week
                 $batch[] = [
                     'name' => $name,
-                    'phone' => $phone,
+                    'phone' => $normalizedPhone,
                     'draw_week' => $drawWeekId
                 ];
                 
@@ -558,11 +618,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                         <option value="">-- Choose Draw Week --</option>
                         <?php if (!empty($upcomingDraws)): ?>
                             <?php foreach ($upcomingDraws as $draw): ?>
+                                <?php if (!$draw['is_past']): // Only show current and future draws ?>
                                 <option value="<?php echo $draw['id']; ?>">
                                     <?php echo $draw['formatted']; ?>
-                                    <?php if ($draw['is_today']): echo ' (Today)'; endif; ?>
-                                    <?php if ($draw['days_until'] == 0): echo ' (Tomorrow)'; elseif ($draw['days_until'] <= 7): echo ' (In ' . $draw['days_until'] . ' days)'; endif; ?>
+                                    <?php if ($draw['is_today']): echo ' (Today)'; elseif ($draw['days_until'] == 1): echo ' (Tomorrow)'; elseif ($draw['days_until'] > 1 && $draw['days_until'] <= 7): echo ' (In ' . $draw['days_until'] . ' days)'; endif; ?>
                                 </option>
+                                <?php endif; ?>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <option value="">No upcoming draws available</option>
