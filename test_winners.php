@@ -1,0 +1,635 @@
+<?php
+/**
+ * Test Winners API
+ * PHP file to test the winners API endpoint
+ */
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winners API Test - PHP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-header h1 {
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .test-header p {
+            color: #c4cbf9;
+            font-size: 1.1rem;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .test-btn-primary {
+            background: #e82a7a;
+            color: white;
+        }
+        
+        .test-btn-primary:hover {
+            background: #d6246d;
+            transform: translateY(-2px);
+        }
+        
+        .test-btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .test-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .status-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #00ff00;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .winners-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .winner-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #e82a7a;
+            transition: all 0.3s ease;
+        }
+        
+        .winner-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .winner-name {
+            color: #e82a7a;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .winner-phone {
+            color: #c4cbf9;
+            font-size: 0.9rem;
+        }
+        
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .bg-success {
+            background: #28a745 !important;
+        }
+        
+        .bg-warning {
+            background: #ffc107 !important;
+            color: #000 !important;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e82a7a;
+        }
+        
+        .stat-label {
+            color: #c4cbf9;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .error-message {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid #dc3545;
+            border-radius: 8px;
+            padding: 15px;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+        
+        .success-message {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            color: #4caf50;
+            margin-bottom: 20px;
+        }
+        
+        .debug-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .debug-section h4 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        
+        .debug-content {
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="las la-trophy"></i> Winners API Test</h1>
+            <p>Test your winners API endpoint and display functionality</p>
+        </div>
+        
+        <div class="test-controls">
+            <button class="test-btn test-btn-primary" onclick="testWinnersAPI()">
+                <i class="las la-play"></i> Test Winners API
+            </button>
+            <button class="test-btn test-btn-secondary" onclick="testDirectAPI()">
+                <i class="las fa-link"></i> Test Direct URL
+            </button>
+            <button class="test-btn test-btn-secondary" onclick="testPHPDirect()">
+                <i class="las fa-server"></i> Test PHP Direct
+            </button>
+            <button class="test-btn test-btn-secondary" onclick="clearDisplay()">
+                <i class="las la-trash"></i> Clear Display
+            </button>
+            <button class="test-btn test-btn-secondary" onclick="toggleAutoRefresh()">
+                <i class="las la-sync"></i> <span id="autoRefreshText">Start Auto Refresh</span>
+            </button>
+        </div>
+        
+        <div id="statusDisplay" class="status-display">
+            Ready to test API... Click "Test Winners API" to begin.
+        </div>
+        
+        <div id="messageDisplay"></div>
+        
+        <div class="winners-display">
+            <h3 style="color: #fff; margin-bottom: 20px;">
+                <i class="las la-users"></i> Current Draw Week Winners
+            </h3>
+            
+            <div class="stats-container" id="statsContainer">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalWinners">0</div>
+                    <div class="stat-label">Total Winners</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="claimedCount">0</div>
+                    <div class="stat-label">Claimed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="unclaimedCount">0</div>
+                    <div class="stat-label">Unclaimed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="claimRate">0%</div>
+                    <div class="stat-label">Claim Rate</div>
+                </div>
+            </div>
+            
+            <div id="winnersList">
+                <div class="text-center py-4" style="color: #c4cbf9;">
+                    <i class="las la-inbox" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                    <div>No winners loaded yet</div>
+                    <div style="font-size: 0.9rem; margin-top: 5px;">Click "Test Winners API" to load data</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="debug-section">
+            <h4><i class="las fa-bug"></i> Debug Information</h4>
+            <div class="debug-content" id="debugContent">
+                PHP Debug info will appear here...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let autoRefreshInterval = null;
+        let isAutoRefreshing = false;
+        
+        function updateStatus(message) {
+            const statusDisplay = document.getElementById('statusDisplay');
+            const timestamp = new Date().toLocaleTimeString();
+            statusDisplay.innerHTML += `[${timestamp}] ${message}\n`;
+            statusDisplay.scrollTop = statusDisplay.scrollHeight;
+        }
+        
+        function updateDebug(message) {
+            const debugContent = document.getElementById('debugContent');
+            const timestamp = new Date().toLocaleTimeString();
+            debugContent.innerHTML += `[${timestamp}] ${message}\n`;
+            debugContent.scrollTop = debugContent.scrollHeight;
+        }
+        
+        function showMessage(message, type = 'info') {
+            const messageDisplay = document.getElementById('messageDisplay');
+            const className = type === 'error' ? 'error-message' : 
+                            type === 'success' ? 'success-message' : '';
+            
+            messageDisplay.innerHTML = `<div class="${className}">${message}</div>`;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                messageDisplay.innerHTML = '';
+            }, 5000);
+        }
+        
+        function testWinnersAPI() {
+            updateStatus('Testing winners API with relative path...');
+            
+            fetch('./api_winners.php')
+                .then(response => {
+                    updateStatus(`Response status: ${response.status} ${response.statusText}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    updateStatus('✓ API response received successfully');
+                    updateStatus(`Data structure: ${JSON.stringify(Object.keys(data), null, 2)}`);
+                    displayWinners(data);
+                    showMessage('✓ Winners loaded successfully!', 'success');
+                })
+                .catch(error => {
+                    updateStatus(`✗ Error: ${error.message}`);
+                    showMessage(`✗ API Error: ${error.message}`, 'error');
+                    
+                    // Try fallback
+                    updateStatus('Trying fallback with absolute URL...');
+                    testDirectAPI();
+                });
+        }
+        
+        function testDirectAPI() {
+            updateStatus('Testing with absolute URL...');
+            
+            fetch('http://localhost/winnerclaim/api_winners.php')
+                .then(response => {
+                    updateStatus(`Direct URL Response status: ${response.status} ${response.statusText}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    updateStatus('✓ Direct API response received successfully');
+                    displayWinners(data);
+                    showMessage('✓ Winners loaded via direct URL!', 'success');
+                })
+                .catch(error => {
+                    updateStatus(`✗ Direct URL Error: ${error.message}`);
+                    showMessage(`✗ Direct URL also failed: ${error.message}`, 'error');
+                    
+                    // Try to get raw response for debugging
+                    updateStatus('Attempting to get raw response for debugging...');
+                    fetch('http://localhost/winnerclaim/api_winners.php')
+                        .then(response => response.text())
+                        .then(text => {
+                            updateStatus('Raw response received:');
+                            updateStatus(text.substring(0, 500) + (text.length > 500 ? '...' : ''));
+                            updateDebug('Raw Response:\n' + text);
+                        })
+                        .catch(err => {
+                            updateStatus(`✗ Could not get raw response: ${err.message}`);
+                        });
+                });
+        }
+        
+        function testPHPDirect() {
+            updateStatus('Testing PHP direct call...');
+            
+            // Make AJAX call to a PHP function that tests the API
+            fetch('./test_winners.php?action=test_php')
+                .then(response => response.json())
+                .then(data => {
+                    updateStatus('✓ PHP direct test completed');
+                    updateDebug('PHP Test Result:\n' + JSON.stringify(data, null, 2));
+                    
+                    if (data.success) {
+                        displayWinners(data.api_data);
+                        showMessage('✓ PHP test successful!', 'success');
+                    } else {
+                        showMessage(`✗ PHP test failed: ${data.error}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    updateStatus(`✗ PHP test error: ${error.message}`);
+                    showMessage(`✗ PHP test failed: ${error.message}`, 'error');
+                });
+        }
+        
+        function displayWinners(data) {
+            const winnersList = document.getElementById('winnersList');
+            
+            // Update statistics
+            if (data.data && data.data.statistics) {
+                const stats = data.data.statistics;
+                document.getElementById('totalWinners').textContent = stats.total_winners || 0;
+                document.getElementById('claimedCount').textContent = stats.claimed_count || 0;
+                document.getElementById('unclaimedCount').textContent = stats.unclaimed_count || 0;
+                document.getElementById('claimRate').textContent = (stats.claim_rate || 0) + '%';
+            }
+            
+            // Clear current list
+            winnersList.innerHTML = '';
+            
+            // Check if winners exist
+            if (!data || !data.data || !data.data.winners || data.data.winners.length === 0) {
+                winnersList.innerHTML = `
+                    <div class="text-center py-4" style="color: #c4cbf9;">
+                        <i class="las la-inbox" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                        <div>No winners available</div>
+                        <div style="font-size: 0.9rem; margin-top: 5px;">Check back later for new winners</div>
+                    </div>
+                `;
+                updateStatus('No winners found in API response');
+                return;
+            }
+            
+            // Display winners
+            data.data.winners.forEach((winner, index) => {
+                const winnerItem = document.createElement('div');
+                winnerItem.className = 'winner-item';
+                
+                const statusBadge = winner.status === 'claimed' ? 'bg-success' : 'bg-warning';
+                const winnerName = winner.name || 'Unknown';
+                const maskedPhone = winner.phone || '*****';
+                const drawDate = winner.draw_date ? new Date(winner.draw_date).toLocaleDateString('en-US', { 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    year: '2-digit' 
+                }) : new Date().toLocaleDateString('en-US', { 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    year: '2-digit' 
+                });
+                
+                winnerItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="winner-name">
+                                <i class="las la-user-circle me-2"></i>${winnerName}
+                            </div>
+                            <div class="winner-phone">
+                                <i class="las la-phone me-1"></i>${maskedPhone}
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge ${statusBadge}">${winner.status || 'unknown'}</span>
+                            <div class="text-muted" style="font-size: 0.8rem; margin-top: 5px;">
+                                ${drawDate}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                winnersList.appendChild(winnerItem);
+                updateStatus(`✓ Added winner: ${winnerName} (${winner.status})`);
+            });
+            
+            updateStatus(`✓ Displayed ${data.data.winners.length} winners successfully`);
+        }
+        
+        function clearDisplay() {
+            document.getElementById('statusDisplay').innerHTML = 'Display cleared... Ready for new test.';
+            document.getElementById('debugContent').innerHTML = 'Debug info cleared...';
+            document.getElementById('messageDisplay').innerHTML = '';
+            document.getElementById('winnersList').innerHTML = `
+                <div class="text-center py-4" style="color: #c4cbf9;">
+                    <i class="las la-inbox" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                    <div>No winners loaded yet</div>
+                    <div style="font-size: 0.9rem; margin-top: 5px;">Click "Test Winners API" to load data</div>
+                </div>
+            `;
+            
+            // Reset stats
+            document.getElementById('totalWinners').textContent = '0';
+            document.getElementById('claimedCount').textContent = '0';
+            document.getElementById('unclaimedCount').textContent = '0';
+            document.getElementById('claimRate').textContent = '0%';
+            
+            updateStatus('Display cleared');
+        }
+        
+        function toggleAutoRefresh() {
+            const autoRefreshText = document.getElementById('autoRefreshText');
+            
+            if (isAutoRefreshing) {
+                clearInterval(autoRefreshInterval);
+                isAutoRefreshing = false;
+                autoRefreshText.textContent = 'Start Auto Refresh';
+                updateStatus('Auto-refresh stopped');
+            } else {
+                autoRefreshInterval = setInterval(() => {
+                    updateStatus('Auto-refreshing...');
+                    testWinnersAPI();
+                }, 30000); // Refresh every 30 seconds
+                isAutoRefreshing = true;
+                autoRefreshText.textContent = 'Stop Auto Refresh';
+                updateStatus('Auto-refresh started (every 30 seconds)');
+            }
+        }
+        
+        // Auto-test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('Page loaded. Ready to test API.');
+            updateStatus('API endpoints to test:');
+            updateStatus('1. Relative path: ./api_winners.php');
+            updateStatus('2. Absolute path: http://localhost/winnerclaim/api_winners.php');
+            updateStatus('3. PHP direct call: ./test_winners.php?action=test_php');
+        });
+    </script>
+</body>
+</html>
+
+<?php
+// Handle PHP direct test
+if (isset($_GET['action']) && $_GET['action'] === 'test_php') {
+    header('Content-Type: application/json');
+    
+    try {
+        // Include database connection
+        require_once 'db.php';
+        
+        // Include required functions
+        require_once 'winner_functions.php';
+        
+        // Test database connection
+        if (!$pdo) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Database connection failed'
+            ]);
+            exit;
+        }
+        
+        // Get current draw week
+        $currentDraw = getCurrentDrawWeek($pdo);
+        
+        if (!$currentDraw) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'No current draw week found'
+            ]);
+            exit;
+        }
+        
+        // Get all winners for current draw week
+        $winners = getCurrentWeekWinners($pdo);
+        
+        // Format the response data
+        $formattedWinners = [];
+        foreach ($winners as $winner) {
+            $formattedWinners[] = [
+                'id' => (int)$winner['id'],
+                'name' => htmlspecialchars($winner['name']),
+                'phone' => maskPhoneNumber($winner['phone']),
+                'draw_week' => (int)$winner['draw_week'],
+                'draw_date' => $winner['draw_date'],
+                'is_claimed' => (bool)$winner['is_claimed'],
+                'claimed_at' => $winner['claimedAt'] ?? null,
+                'created_at' => $winner['createdAt'],
+                'status' => $winner['is_claimed'] ? 'claimed' : 'unclaimed'
+            ];
+        }
+        
+        // Response data
+        $response = [
+            'status' => 'success',
+            'message' => 'Current draw week winners retrieved successfully',
+            'data' => [
+                'draw_week' => [
+                    'id' => (int)$currentDraw['id'],
+                    'date' => $currentDraw['date'],
+                    'status' => $currentDraw['status'] ?? 'active'
+                ],
+                'winners' => $formattedWinners,
+                'statistics' => [
+                    'total_winners' => count($formattedWinners),
+                    'claimed_count' => count(array_filter($formattedWinners, fn($w) => $w['is_claimed'])),
+                    'unclaimed_count' => count(array_filter($formattedWinners, fn($w) => !$w['is_claimed'])),
+                    'claim_rate' => count($formattedWinners) > 0 ? 
+                        round((count(array_filter($formattedWinners, fn($w) => $w['is_claimed'])) / count($formattedWinners)) * 100, 2) : 0
+                ]
+            ]
+        ];
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'PHP direct test successful',
+            'api_data' => $response,
+            'debug' => [
+                'database_connected' => true,
+                'current_draw_week' => $currentDraw,
+                'winners_count' => count($formattedWinners)
+            ]
+        ]);
+        
+    } catch (PDOException $e) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Database error: ' . $e->getMessage()
+        ]);
+    } catch (Exception $e) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Server error: ' . $e->getMessage()
+        ]);
+    }
+    
+    exit;
+}
+
+/**
+ * Mask phone number for privacy (show only last 4 digits)
+ * @param string $phone Full phone number
+ * @return string Masked phone number
+ */
+function maskPhoneNumber($phone) {
+    if (strlen($phone) <= 4) {
+        return $phone;
+    }
+    $visible = substr($phone, -4);
+    $masked = str_repeat('*', strlen($phone) - 4);
+    return $masked . $visible;
+}
+?>

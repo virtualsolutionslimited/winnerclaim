@@ -381,7 +381,7 @@ function createClaimForDrawWeek($pdo, $claimData, $drawWeekId) {
             
             // Send success SMS notification
             $drawDate = new DateTime($drawDetails['date']);
-            $formattedDate = $drawDate->format('F j, Y \a\t g:i A');
+            $formattedDate = $drawDate->format('F j, Y');
             
             $successMessage = "Congratulations! Your prize claim has been successfully processed for " . 
                              $formattedDate . ".";
