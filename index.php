@@ -159,8 +159,10 @@ $claimWindowDate = null;
 $claimWindowText = 'Claim window: ';
 
 if ($currentDraw) {
-    // Calculate claim window: 5 days from draw date
+    // Calculate claim window: 5 days from draw date at 6:00 PM
     $drawDate = new DateTime($currentDraw['date']);
+    // Set the draw time to 6:00 PM (18:00) as that's when winners are announced
+    $drawDate->setTime(18, 0, 0);
     $claimWindowDate = clone $drawDate;
     $claimWindowDate->add(new DateInterval('P5D')); // Add 5 days
     
