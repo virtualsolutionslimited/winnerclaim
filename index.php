@@ -185,6 +185,7 @@ if ($currentDraw) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Claim Your World Cup Experience Prize</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" type="image/png" href="./logo.png" sizes="16x16" />
   </head>
   <body>
     <!-- Confetti Animation -->
@@ -1015,6 +1016,26 @@ if ($currentDraw) {
         window.claimWindowDate = null;
         console.log('PHP claim window date: null');
         <?php endif; ?>
+        
+        // Direct event listener for claim detail modal close button
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeBtn = document.getElementById('closeClaimDetailBtn');
+            if (closeBtn) {
+                console.log('Found close button, adding event listener');
+                closeBtn.addEventListener('click', function(e) {
+                    console.log('Close button clicked directly');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const modal = document.getElementById('claimDetailModal');
+                    if (modal) {
+                        modal.classList.remove('show');
+                        console.log('Modal closed directly');
+                    }
+                });
+            } else {
+                console.log('Close button not found');
+            }
+        });
     </script>
     <script type="module" src="script.js"></script>
   </body>

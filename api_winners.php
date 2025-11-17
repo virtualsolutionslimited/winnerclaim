@@ -88,16 +88,23 @@ try {
 }
 
 /**
- * Mask phone number for privacy (show only last 4 digits)
+ * Mask phone number for privacy (show first 2 and last 3 digits)
  * @param string $phone Full phone number
  * @return string Masked phone number
  */
 function maskPhoneNumber($phone) {
-    if (strlen($phone) <= 4) {
-        return $phone;
+    // Remove any non-digit characters
+    $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+    
+    if (strlen($cleanPhone) <= 5) {
+        return $cleanPhone;
     }
-    $visible = substr($phone, -4);
-    $masked = str_repeat('*', strlen($phone) - 4);
-    return $masked . $visible;
+    
+    $firstTwo = substr($cleanPhone, 0, 2);
+    $lastThree = substr($cleanPhone, -3);
+    $middleLength = strlen($cleanPhone) - 5;
+    $masked = str_repeat('*', $middleLength);
+    
+    return $firstTwo . $masked . $lastThree;
 }
 ?>

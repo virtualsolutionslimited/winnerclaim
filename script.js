@@ -164,6 +164,7 @@ function showModal(modalId) {
 
   // Hide current modal if any
   if (currentModal) {
+    console.log("Hiding current modal:", currentModal);
     currentModal.classList.remove("show");
   }
 
@@ -172,7 +173,9 @@ function showModal(modalId) {
   console.log("Found modal element:", currentModal);
 
   if (currentModal) {
+    console.log("Adding 'show' class to modal");
     currentModal.classList.add("show");
+    console.log("Modal classes after adding:", currentModal.className);
     document.body.style.overflow = "hidden";
     console.log("Modal shown successfully");
 
@@ -240,11 +243,16 @@ function showModal(modalId) {
 }
 
 function hideModal(modalId) {
+  console.log("hideModal called with modalId:", modalId);
+
   if (modalId) {
     // Close specific modal
     const modal = document.getElementById(modalId);
+    console.log("Found modal element:", modal);
     if (modal) {
+      console.log("Removing 'show' class from modal");
       modal.classList.remove("show");
+      console.log("Modal classes after removal:", modal.className);
       if (currentModal === modal) {
         currentModal = null;
         document.body.style.overflow = "";
@@ -252,6 +260,8 @@ function hideModal(modalId) {
       if (errorModal === modal) {
         errorModal = null;
       }
+    } else {
+      console.error("Modal not found with ID:", modalId);
     }
   } else if (currentModal) {
     // Close current modal (default behavior)
@@ -1313,8 +1323,11 @@ function initKycForm() {
 function initModals() {
   // Close button handlers
   document.querySelectorAll(".close-btn").forEach((btn) => {
+    console.log("Found close-btn:", btn);
     btn.addEventListener("click", (e) => {
+      console.log("Close-btn clicked:", e.target);
       const modal = e.target.closest(".modal");
+      console.log("Found parent modal:", modal);
       if (modal) {
         hideModal(modal.id);
         // Refresh page if closing success modal
@@ -2087,11 +2100,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Close button for claim detail modal
   const closeClaimDetailBtn = document.getElementById("closeClaimDetailBtn");
+  console.log("Found closeClaimDetailBtn:", closeClaimDetailBtn);
   if (closeClaimDetailBtn) {
-    closeClaimDetailBtn.addEventListener("click", () => {
+    closeClaimDetailBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("Close claim detail button clicked");
       hideModal("claimDetailModal");
     });
+
+    // Also try mousedown event as backup
+    closeClaimDetailBtn.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("Close claim detail button mousedown");
+    });
   }
+
+  // Add a global test function for debugging
+  window.testCloseClaimModal = function () {
+    console.log("Test function called - closing claim detail modal");
+    const modal = document.getElementById("claimDetailModal");
+    if (modal) {
+      console.log("Modal found, removing show class");
+      modal.classList.remove("show");
+      console.log("Modal classes after removal:", modal.className);
+    } else {
+      console.error("Modal not found");
+    }
+  };
 
   // Helper function for OTP countdown
   function startOtpCountdown() {
